@@ -48,10 +48,10 @@ const Navbar = () => {
     { name: t('navServices'), path: '/services' },
     { name: t('navMoroccan'), path: '/services?cat=moroccan' },
     { name: t('navGallery'), path: '/gallery' },
-    // { name: t('navReviews'), path: '/reviews' },
-    // { name: t('navGiftCards'), path: '/gift-cards', isGift: true },
-    // { name: t('navFaq'), path: '/faq' },
-    // { name: t('navAbout'), path: '/about' },
+    { name: t('navReviews'), path: '/reviews' },
+    { name: t('navGiftCards'), path: '/gift-cards', isGift: true },
+    { name: t('navFaq'), path: '/faq' },
+    { name: t('navAbout'), path: '/about' },
   ];
 
   return (
