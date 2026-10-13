@@ -1,16 +1,16 @@
-// import { AuthProvider } from './context/AuthContext';
-// import { DataProvider } from './context/DataContext';
+import React from 'react';
+import { LanguageProvider } from './context/LanguageContext';
+import { BookingProvider } from './context/BookingContext';
 import AppRoutes from './routes/AppRoutes';
 import './App.css';
 
 function App() {
   return (
-    // <AuthProvider>
-    //   <DataProvider>
+    <LanguageProvider>
+      <BookingProvider>
         <AppRoutes />
-    //   </DataProvider>
-    // </AuthProvider>
-  
+      </BookingProvider>
+    </LanguageProvider>
   );
 }
 

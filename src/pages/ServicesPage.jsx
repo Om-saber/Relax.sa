@@ -1,0 +1,276 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  FiSearch, 
+  FiClock, 
+  FiEye, 
+  FiShoppingBag, 
+  FiCheckCircle 
+} from 'react-icons/fi';
+import { HiSparkles } from 'react-icons/hi2';
+import { FaCrown } from 'react-icons/fa6';
+import { useBooking } from '../context/BookingContext';
+import { useLanguage } from '../context/LanguageContext';
+import { SERVICES, CATEGORIES } from '../data/servicesData';
+
+const ServicesPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategory = searchParams.get('cat') || 'all';
+
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [durationFilter, setDurationFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('default');
+
+  const { addToCart, quickBookService, setActiveServiceModal } = useBooking();
+  const { lang, t } = useLanguage();
+
+  useEffect(() => {
+    const cat = searchParams.get('cat');
+    if (cat) setActiveCategory(cat);
+  }, [searchParams]);
+
+  const handleCategoryChange = (catId) => {
+    setActiveCategory(catId);
+    setSearchParams(catId === 'all' ? {} : { cat: catId });
+  };
+
+  const getCategoryName = (id, fallback) => {
+    switch (id) {
+      case 'all': return t('catAll');
+      case 'packages': return t('catPackages');
+      case 'massage': return t('catMassage');
+      case 'moroccan': return t('catMoroccan');
+      case 'beauty': return t('catBeauty');
+      case 'maternity': return t('catMaternity');
+      default: return fallback;
+    }
+  };
+
+  const filteredServices = useMemo(() => {
+    return SERVICES.filter((s) => {
+      if (activeCategory !== 'all' && s.category !== activeCategory) {
+        return false;
+      }
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = s.title.toLowerCase().includes(q) || s.titleEn.toLowerCase().includes(q);
+        const matchesDesc = s.description.toLowerCase().includes(q);
+        if (!matchesTitle && !matchesDesc) return false;
+      }
+
+      if (durationFilter !== 'all') {
+        if (!s.duration.includes(durationFilter)) return false;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      if (sortBy === 'price-low') return a.price - b.price;
+      if (sortBy === 'price-high') return b.price - a.price;
+      return 0;
+    });
+  }, [activeCategory, searchQuery, durationFilter, sortBy]);
+
+  return (
+    <div className="pt-32 pb-24 min-h-screen bg-[#FFF9FA]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Page Banner */}
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFEAF0] text-[#CF3A69] text-xs font-bold border border-rose-200 mb-3 whitespace-nowrap">
+            <HiSparkles className="text-amber-500" />
+            <span>{lang === 'ar' ? 'قائمة الخدمات والباقات الملكية' : 'Royal Services & Packages Catalog'}</span>
+          </div>
+          <h1 className="text-3xl sm:text-5xl font-black text-[#2B151F]">
+            {lang === 'ar' ? "خدمات وباقات Let's Relax" : "Let's Relax Services & Packages"}
+          </h1>
+          <p className="text-sm sm:text-base text-[#8E717D] mt-3">
+            {lang === 'ar' ? 'استكشفي تشكيلتنا المتكاملة من جلسات المساج، الحمام المغربي، والعناية بالبشرة المصممة لتمنحكِ أقصى درجات الاسترخاء في منزلكِ.' : 'Explore our comprehensive selection of massages, Moroccan baths, and skincare treatments designed to bring relaxation to your home.'}
+          </p>
+        </div>
+
+        {/* Filters and Controls Card */}
+        <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-lg mb-10 space-y-6">
+          
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-all whitespace-nowrap ${
+                  activeCategory === cat.id
+                    ? 'bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white shadow-md shadow-rose-500/20'
+                    : 'bg-[#FFF9FA] text-[#5A3F4B] hover:bg-rose-50 border border-rose-100'
+                }`}
+              >
+                <span>{getCategoryName(cat.id, cat.name)}</span>
+                <span className="opacity-80 text-[11px] mx-1">({cat.count})</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Search & Sort Controls */}
+          <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 pt-2 border-t border-rose-100 items-center">
+            {/* Search Input (6 cols) */}
+            <div className="sm:col-span-6 relative">
+              <FiSearch className="absolute start-3.5 top-3 text-[#CF3A69] text-sm" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={lang === 'ar' ? 'ابحثي عن خدمة بالاسم أو الفائدة...' : 'Search treatment by name or benefit...'}
+                className="w-full ps-10 pe-3 py-2.5 rounded-xl border border-rose-200 bg-[#FFF9FA] text-xs text-[#2B151F] focus:outline-none focus:border-[#CF3A69]"
+              />
+            </div>
+
+            {/* Duration filter (3 cols) */}
+            <div className="sm:col-span-3">
+              <select
+                aria-label="Duration"
+                value={durationFilter}
+                onChange={(e) => setDurationFilter(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-rose-200 bg-[#FFF9FA] text-xs font-bold text-[#5A3F4B] focus:outline-none focus:border-[#CF3A69]"
+              >
+                <option value="all">{lang === 'ar' ? 'كل المدد الزمنية' : 'All Durations'}</option>
+                <option value="60">{lang === 'ar' ? '60 دقيقة' : '60 Minutes'}</option>
+                <option value="75">{lang === 'ar' ? '75 دقيقة' : '75 Minutes'}</option>
+                <option value="90">{lang === 'ar' ? '90 دقيقة' : '90 Minutes'}</option>
+                <option value="120">{lang === 'ar' ? '120 دقيقة' : '120 Minutes'}</option>
+              </select>
+            </div>
+
+            {/* Sort filter (3 cols) */}
+            <div className="sm:col-span-3">
+              <select
+                aria-label="Sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full p-2.5 rounded-xl border border-rose-200 bg-[#FFF9FA] text-xs font-bold text-[#5A3F4B] focus:outline-none focus:border-[#CF3A69]"
+              >
+                <option value="default">{lang === 'ar' ? 'الترتيب الافتراضي' : 'Default Sorting'}</option>
+                <option value="price-low">{lang === 'ar' ? 'الأقل سعراً أولاً' : 'Price: Low to High'}</option>
+                <option value="price-high">{lang === 'ar' ? 'الأعلى سعراً أولاً' : 'Price: High to Low'}</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Services Results Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {filteredServices.map((service, idx) => (
+            <motion.div
+              key={service.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: idx * 0.04 }}
+              className="bg-white rounded-3xl border border-rose-100 overflow-hidden shadow-sm hover:shadow-xl hover:border-rose-300 transition-all flex flex-col justify-between group"
+            >
+              {/* Image & Badges */}
+              <div className="relative h-56 w-full overflow-hidden bg-rose-50">
+                <img
+                  src={service.image}
+                  alt={lang === 'ar' ? service.title : service.titleEn}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+
+                <div className="absolute top-3 right-3">
+                  <span className="bg-[#CF3A69] text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md whitespace-nowrap">
+                    {lang === 'ar' ? (service.badge || 'خدمة مميزة') : 'Featured'}
+                  </span>
+                </div>
+
+                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] font-bold text-[#2B151F] flex items-center gap-1 whitespace-nowrap">
+                  <FiClock className="text-[#CF3A69]" />
+                  <span>{lang === 'ar' ? service.duration : service.duration.replace('دقيقة', 'mins')}</span>
+                </div>
+
+                <div className="absolute bottom-3 right-3 left-3 flex items-end justify-between text-white">
+                  <div>
+                    <h3 className="font-black text-base sm:text-lg text-white leading-tight">
+                      {lang === 'ar' ? service.title : service.titleEn}
+                    </h3>
+                    <p className="text-[11px] text-rose-200/90 font-serif">
+                      {lang === 'ar' ? service.titleEn : service.title}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                <p className="text-xs text-[#5A3F4B] leading-relaxed line-clamp-2">
+                  {lang === 'ar' ? service.description : `${service.titleEn} designed to provide complete comfort, tension relief, and radiant energy in your home.`}
+                </p>
+
+                {/* Benefits */}
+                {service.benefits && (
+                  <div className="space-y-1 pt-1">
+                    {service.benefits.slice(0, 2).map((b, i) => (
+                      <div key={i} className="text-[11px] text-[#5A3F4B] flex items-center gap-2">
+                        <FiCheckCircle className="text-emerald-500 text-xs shrink-0" />
+                        <span className="truncate">{b}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Price & Tabby */}
+                <div className="pt-2 border-t border-rose-100 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-black text-[#CF3A69]">
+                        {service.price} {t('currency')}
+                      </span>
+                      {service.originalPrice && (
+                        <span className="text-xs text-gray-400 line-through">
+                          {service.originalPrice} {t('currency')}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-emerald-700 font-bold block whitespace-nowrap">
+                      {lang === 'ar' ? `أو ${service.tabbyInstallment} ر.س / شهرياً عبر تابي` : `Or ${service.tabbyInstallment} SAR / mo via Tabby`}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setActiveServiceModal(service)}
+                      className="p-2.5 rounded-xl border border-rose-200 text-[#5A3F4B] hover:text-[#CF3A69] hover:bg-rose-50 transition-colors"
+                      title={t('viewDetails')}
+                    >
+                      <FiEye className="text-base" />
+                    </button>
+                    <button
+                      onClick={() => addToCart(service)}
+                      className="p-2.5 rounded-xl border border-rose-200 text-[#5A3F4B] hover:text-[#CF3A69] hover:bg-rose-50 transition-colors"
+                      title={t('addToCart')}
+                    >
+                      <FiShoppingBag className="text-base" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Book CTA */}
+                <button
+                  onClick={() => quickBookService(service)}
+                  className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white font-bold text-xs shadow-md shadow-rose-400/20 hover:opacity-95 transition-opacity flex items-center justify-center gap-1.5 whitespace-nowrap"
+                >
+                  <FaCrown className="text-[#FFDF78] text-xs" />
+                  <span>{t('quickBook')}</span>
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default ServicesPage;

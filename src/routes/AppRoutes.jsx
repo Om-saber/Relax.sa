@@ -1,48 +1,58 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from '../pages/Login';
-import Dashboard from '../pages/Dashboard';
-// import Categories from '../pages/Categories';
-import Products from '../pages/Products';
-import NotFound from '../pages/NotFound';
-// import ProtectedRoute from '../components/ProtectedRoute';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
+import CartDrawer from '../components/common/CartDrawer';
+import BookingModal from '../components/common/BookingModal';
+import ServiceDetailModal from '../components/common/ServiceDetailModal';
+import SearchModal from '../components/common/SearchModal';
+import WhatsAppFloating from '../components/common/WhatsAppFloating';
+import Toast from '../components/common/Toast';
+
+import HomePage from '../pages/HomePage';
+import ServicesPage from '../pages/ServicesPage';
+import GalleryPage from '../pages/GalleryPage';
+import ReviewsPage from '../pages/ReviewsPage';
+import FAQPage from '../pages/FAQPage';
+import GiftCardsPage from '../pages/GiftCardsPage';
+import AboutPage from '../pages/AboutPage';
+import TermsPage from '../pages/TermsPage';
 
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/products" element={<Products />} />
-        {/* <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        /> */}
-        {/* <Route
-          path="/categories"
-          element={
-            <ProtectedRoute>
-              <Categories />
-            </ProtectedRoute>
-          }
-        /> */}
-        {/* <Route
-          path="/products"
-          element={
-            <ProtectedRoute>
-              <Products />
-            </ProtectedRoute>
-          }
-        /> */}
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className="flex flex-col min-h-screen bg-[#FFF9FA] text-[#2B151F]">
+        {/* Global Navigation */}
+        <Navbar />
+
+        {/* Main Content View */}
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/services" element={<ServicesPage />} />
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/faq" element={<FAQPage />} />
+            <Route path="/gift-cards" element={<GiftCardsPage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+
+        {/* Global Footer */}
+        <Footer />
+
+        {/* Global Modals, Drawers & Notifications */}
+        <CartDrawer />
+        <BookingModal />
+        <ServiceDetailModal />
+        <SearchModal />
+        <WhatsAppFloating />
+        <Toast />
+      </div>
     </BrowserRouter>
   );
 };
 
 export default AppRoutes;
-

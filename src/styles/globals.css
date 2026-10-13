@@ -1,4 +1,157 @@
-::selection {
-  background-color: #4ade80;
-  color: #0f172a;
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+
+:root {
+  --font-tajawal: 'Tajawal', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-cinzel: 'Cinzel', serif;
+
+  /* Rose & Blush Luxury Palette */
+  --color-rose-50: #FFF7F9;
+  --color-rose-100: #FFEAF0;
+  --color-rose-200: #FED6E2;
+  --color-rose-300: #FCB6CC;
+  --color-rose-400: #F782A3;
+  --color-rose-500: #E65A84;
+  --color-rose-600: #CF3A69;
+  --color-rose-700: #B02652;
+  --color-rose-800: #8F2044;
+  --color-rose-900: #460E21;
+
+  /* Warm Rose Gold & Champagne Accents */
+  --color-gold-light: #F7E7CE;
+  --color-gold-base: #D4AF37;
+  --color-gold-dark: #997B24;
+  --color-rosegold: #C98A7D;
+  --color-champagne: #F5E6D3;
+
+  /* Deep Plum Velvet for readable text */
+  --color-plum-dark: #231219;
+  --color-plum-muted: #5A3F4B;
+  --color-plum-light: #8E717D;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  direction: rtl;
+  font-family: var(--font-tajawal);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #FFF9FA;
+  color: var(--color-plum-dark);
+  font-family: var(--font-tajawal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF1F4;
+}
+::-webkit-scrollbar-thumb {
+  background: #F4A2B8;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E65A84;
+}
+
+/* Glassmorphism & Luxury Cards */
+.luxury-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(247, 130, 163, 0.2);
+}
+
+.luxury-glass-dark {
+  background: rgba(35, 18, 25, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.luxury-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(254, 214, 226, 0.8);
+  box-shadow: 0 10px 30px -10px rgba(226, 90, 132, 0.08);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.luxury-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(247, 130, 163, 0.6);
+  box-shadow: 0 20px 35px -10px rgba(226, 90, 132, 0.16);
+}
+
+/* Shimmer effect for VIP and promo tags */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.shimmer-gold {
+  background: linear-gradient(
+    90deg,
+    #D4AF37 0%,
+    #FFF4D2 50%,
+    #D4AF37 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3.5s infinite linear;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.shimmer-badge {
+  background: linear-gradient(
+    110deg,
+    #E65A84 0%,
+    #FBB6CE 40%,
+    #E65A84 80%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 4s infinite linear;
+}
+
+/* Subtle background glowing blooms */
+.bg-rose-glow {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 209, 220, 0.65) 0%, rgba(255, 247, 249, 0) 70%);
+}
+
+.bg-gold-glow {
+  background: radial-gradient(circle at 50% 50%, rgba(245, 230, 211, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+/* Floating animation */
+@keyframes softFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1.5deg); }
+}
+
+.animate-soft-float {
+  animation: softFloat 5s ease-in-out infinite;
+}
+
+/* Pulse Glow */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(230, 90, 132, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(230, 90, 132, 0.65);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }
