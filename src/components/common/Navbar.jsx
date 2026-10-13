@@ -46,7 +46,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t('navHome'), path: '/' },
     { name: t('navServices'), path: '/services' },
-    { name: t('navMoroccan'), path: '/services?cat=moroccan' },
+    // { name: t('navMoroccan'), path: '/services?cat=moroccan' },
     { name: t('navGallery'), path: '/gallery' },
     { name: t('navReviews'), path: '/reviews' },
     { name: t('navGiftCards'), path: '/gift-cards', isGift: true },
