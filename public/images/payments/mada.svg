@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 42" width="100" height="42">
+  <rect width="100" height="42" rx="8" fill="#FFFFFF"/>
+  <g transform="translate(18, 9)">
+    <!-- Top Green Arc & Arabic Mada -->
+    <path d="M5.5 10.5C5.5 5.5 16 1.8 28 1.8c9.5 0 18.2 2.3 21.2 5.7-2.8-1.5-9.8-3.2-18.7-3.2-11.8 0-19.8 3.5-20.8 6.8-.2-.2-.2-.4-.2-.6z" fill="#88C057"/>
+    <!-- Bottom Cyan/Blue Arc -->
+    <path d="M57.5 13.5c0 5-10.5 8.7-22.5 8.7-9.5 0-18.2-2.3-21.2-5.7 2.8 1.5 9.8 3.2 18.7 3.2 11.8 0 19.8-3.5 20.8-6.8.2.2.2.4.2.6z" fill="#00A3E0"/>
+    <!-- Mada Arabic Text -->
+    <text x="14" y="10" font-family="'Tajawal', sans-serif" font-weight="900" font-size="9" fill="#005A70">مدى</text>
+    <!-- Mada English Text -->
+    <text x="14" y="19" font-family="'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="10.5" fill="#003B4C" letter-spacing="-0.5">mada</text>
+  </g>
+</svg>

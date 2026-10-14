@@ -46,7 +46,7 @@ const Navbar = () => {
   const navLinks = [
     { name: t('navHome'), path: '/' },
     { name: t('navServices'), path: '/services' },
-    // { name: t('navMoroccan'), path: '/services?cat=moroccan' },
+    { name: t('navPackages'), path: '/packages', isPackage: true },
     { name: t('navGallery'), path: '/gallery' },
     { name: t('navReviews'), path: '/reviews' },
     { name: t('navGiftCards'), path: '/gift-cards', isGift: true },
@@ -103,6 +103,7 @@ const Navbar = () => {
                     } ${link.isGift ? 'text-[#B02652] bg-gradient-to-r from-rose-50 to-amber-50/50 border border-rose-200/60' : ''}`}
                 >
                   {link.isGift && <FiGift className="text-[#E65A84] text-xs shrink-0" />}
+                  {link.isPackage && <FaCrown className="text-amber-500 text-xs shrink-0" />}
                   <span>{link.name}</span>
                   {isActive && (
                     <span className="absolute bottom-0 left-2 right-2 h-0.5 bg-gradient-to-r from-[#CF3A69] to-[#E65A84] rounded-full" />
@@ -190,6 +191,7 @@ const Navbar = () => {
                   >
                     <span className="flex items-center gap-2">
                       {link.isGift && <FiGift className="text-[#E65A84]" />}
+                      {link.isPackage && <FaCrown className="text-amber-500" />}
                       {link.name}
                     </span>
                     {isActive && <span className="w-2 h-2 rounded-full bg-[#CF3A69]" />}

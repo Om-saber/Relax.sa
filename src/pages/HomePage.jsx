@@ -26,7 +26,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
-      <CategoryNav activeCategory={activeCategory} onSelectCategory={handleCategorySelect} />
+      {/* <CategoryNav activeCategory={activeCategory} onSelectCategory={handleCategorySelect} /> */}
       <FeaturedPackages />
       <div id="services-section">
         <ServicesGrid />

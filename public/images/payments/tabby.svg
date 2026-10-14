@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 42" width="100" height="42">
+  <rect width="100" height="42" rx="8" fill="#FFFFFF"/>
+  <g transform="translate(15, 8)">
+    <!-- Tabby Vibrant Green Pill Container -->
+    <rect x="0" y="2" width="70" height="22" rx="6" fill="#3BFF9A"/>
+    <!-- tabby text -->
+    <text x="35" y="17" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="14.5" fill="#000000" letter-spacing="-0.8">tabby</text>
+  </g>
+</svg>

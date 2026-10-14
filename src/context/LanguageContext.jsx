@@ -27,7 +27,8 @@ export const translations = {
     brandTag: 'سبا',
     brandSub: 'سبا منزلي فاخر للنساء فقط',
     navHome: 'الرئيسية',
-    navServices: 'الخدمات والباقات',
+    navServices: 'الخدمات',
+    navPackages: 'الباقات',
     navMoroccan: 'الحمام المغربي',
     navGallery: 'معرض الصور',
     navReviews: 'آراء العملاء',
@@ -38,7 +39,9 @@ export const translations = {
     cart: 'سلة الحجز',
     cartEmpty: 'سلة الحجز فارغة حالياً',
     cartItemsCount: 'خدمات مضافة',
-    exploreServices: 'تصفح الخدمات والباقات',
+    exploreServices: 'تصفح الخدمات الفردية',
+    explorePackages: 'تصفح باقات الدلال الملكية',
+    allPackagesBtn: 'عرض جميع الباقات الملكية',
     subtotal: 'المجموع الفرعي:',
     discount: 'الخصم المطبق:',
     total: 'الإجمالي النهائي:',
@@ -199,7 +202,8 @@ export const translations = {
     brandTag: 'Spa',
     brandSub: 'Luxury Home Spa for Women',
     navHome: 'Home',
-    navServices: 'Services & Packages',
+    navServices: 'Services',
+    navPackages: 'Packages',
     navMoroccan: 'Moroccan Bath',
     navGallery: 'Gallery',
     navReviews: 'Reviews',
@@ -210,7 +214,9 @@ export const translations = {
     cart: 'Booking Bag',
     cartEmpty: 'Your booking bag is empty',
     cartItemsCount: 'Services added',
-    exploreServices: 'Explore Services & Packages',
+    exploreServices: 'Explore Individual Services',
+    explorePackages: 'Explore Royal Spa Packages',
+    allPackagesBtn: 'Explore All Packages',
     subtotal: 'Subtotal:',
     discount: 'Discount Applied:',
     total: 'Final Total:',
@@ -374,8 +380,10 @@ export const LanguageProvider = ({ children }) => {
       console.error(e);
     }
 
+    const dir = isRTL ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
-    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+    document.documentElement.dir = dir;
+    document.body.dir = dir;
   }, [lang, isRTL]);
 
   const toggleLanguage = () => {

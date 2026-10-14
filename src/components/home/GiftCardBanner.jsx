@@ -16,7 +16,7 @@ const GiftCardBanner = () => {
           <div className="absolute -left-10 -bottom-10 w-60 h-60 bg-[#FED6E2]/50 rounded-full blur-2xl pointer-events-none" />
 
           {/* Text */}
-          <div className="space-y-4 max-w-xl text-center lg:text-right relative z-10">
+          <div className="space-y-4 max-w-xl text-center lg:text-start relative z-10">
             <span className="inline-flex items-center gap-1.5 bg-[#CF3A69]/10 text-[#CF3A69] text-xs font-bold px-3 py-1 rounded-full border border-rose-200 whitespace-nowrap">
               <FiGift />
               <span>{t('giftBadge')}</span>

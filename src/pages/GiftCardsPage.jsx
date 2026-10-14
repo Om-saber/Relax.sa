@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { 
-  FiGift, 
+import {
+  FiGift,
   FiCheckCircle,
   FiZoomIn,
   FiX,
@@ -55,12 +55,12 @@ const THEMES = {
 const GiftCardsPage = () => {
   const { lang, t } = useLanguage();
 
-  const [recipient, setRecipient] = useState(lang === 'ar' ? 'أمي الحبيبة ❤️' : 'My Dear Mother ❤️');
+  const [recipient, setRecipient] = useState(lang === 'ar' ? ' ' : '');
   const [sender, setSender] = useState(lang === 'ar' ? 'سارة ناصر' : 'Sarah Nasser');
   const [message, setMessage] = useState(
     lang === 'ar'
-      ? 'تستاهلين كل الراحة والدلال في يومكِ الخاص.. جلسة سبا ملكية في دفء منزلكِ 🌸'
-      : 'You deserve the highest pampering and relaxation.. A royal spa session in the warmth of your home 🌸'
+      ? ''
+      : ''
   );
   const [selectedServiceId, setSelectedServiceId] = useState('calm-package');
   const [theme, setTheme] = useState('rosegold');
@@ -96,7 +96,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
   return (
     <div className="pt-32 pb-24 min-h-screen bg-[#FFF9FA]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Page Banner */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#FFEAF0] text-[#CF3A69] text-xs font-bold border border-rose-200 mb-3 whitespace-nowrap">
@@ -113,7 +113,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
 
         {/* Customizer Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Controls Form (6 cols) */}
           <div className="lg:col-span-6 bg-white rounded-3xl p-6 sm:p-8 border border-rose-100 shadow-xl space-y-4">
             <h3 className="font-bold text-base text-[#2B151F] flex items-center gap-2 border-b border-rose-100 pb-3">
@@ -130,7 +130,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
                 type="text"
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
-                placeholder={lang === 'ar' ? 'مثال: أمي الغالية، أختي نورة...' : 'e.g. My Dear Mom, Sarah...'}
+                placeholder={lang === 'ar' ? 'ادخل اسم المهدى إليها' : 'Enter the recipient name'}
                 className="w-full p-3 rounded-xl border border-rose-200 text-xs text-[#2B151F] focus:outline-none focus:border-[#CF3A69]"
               />
             </div>
@@ -192,11 +192,10 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
                     key={th.id}
                     type="button"
                     onClick={() => setTheme(th.id)}
-                    className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-1 ${
-                      theme === th.id
-                        ? `${th.badgeClass} ring-2 ${th.ringClass} font-black shadow-sm`
-                        : 'border-rose-100 hover:bg-rose-50/70 text-[#5A3F4B]'
-                    }`}
+                    className={`p-2.5 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-1 ${theme === th.id
+                      ? `${th.badgeClass} ring-2 ${th.ringClass} font-black shadow-sm`
+                      : 'border-rose-100 hover:bg-rose-50/70 text-[#5A3F4B]'
+                      }`}
                   >
                     <span>{lang === 'ar' ? th.nameAr : th.nameEn}</span>
                   </button>
@@ -219,7 +218,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
 
           {/* Luxury Gift Card Photo Showcase (6 cols) */}
           <div className="lg:col-span-6 space-y-4">
-            
+
             {/* Preview Section Header */}
             <div className="flex items-center justify-between text-xs font-bold text-[#8E717D] px-2">
               <span className="flex items-center gap-1.5 text-[#2B151F]">
@@ -233,7 +232,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
 
             {/* The Photo Showcase Frame */}
             <div className={`relative rounded-3xl overflow-hidden border-2 border-rose-200 shadow-2xl bg-[#1E0B14] transition-all duration-500 group ${currentTheme.glowClass}`}>
-              
+
               {/* Animated Image with Smooth Crossfade */}
               <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#2B121D]">
                 <AnimatePresence mode="wait">
@@ -298,11 +297,10 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
                       key={th.id}
                       type="button"
                       onClick={() => setTheme(th.id)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${
-                        theme === th.id
-                          ? 'bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white shadow-md scale-105'
-                          : 'bg-white/10 hover:bg-white/20 text-rose-100/80 border border-white/10'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1.5 ${theme === th.id
+                        ? 'bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white shadow-md scale-105'
+                        : 'bg-white/10 hover:bg-white/20 text-rose-100/80 border border-white/10'
+                        }`}
                     >
                       <span>{lang === 'ar' ? th.nameAr : th.nameEn}</span>
                     </button>
@@ -314,7 +312,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
             {/* Personalized Dedication Preview Card */}
             <div className="bg-gradient-to-br from-white via-[#FFF9FA] to-rose-50/40 rounded-3xl p-5 border border-rose-200 shadow-md space-y-3 relative overflow-hidden">
               <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-[#CF3A69]/5 rounded-full blur-xl pointer-events-none" />
-              
+
               <div className="flex items-center justify-between border-b border-rose-100 pb-2.5">
                 <div className="flex items-center gap-2">
                   <FiHeart className="text-[#CF3A69]" />
@@ -389,7 +387,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
             onClick={() => setIsZoomOpen(false)}
             className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
           >
-            <div 
+            <div
               className="relative max-w-4xl w-full bg-[#1E0B14] rounded-3xl overflow-hidden border border-white/20 shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
@@ -400,7 +398,7 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
               >
                 <FiX className="text-xl" />
               </button>
-              
+
               <img
                 src={currentTheme.image}
                 alt={lang === 'ar' ? currentTheme.editionAr : currentTheme.editionEn}
@@ -424,11 +422,10 @@ Please contact me to arrange voucher delivery and schedule the session. Thank yo
                       key={th.id}
                       type="button"
                       onClick={() => setTheme(th.id)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                        theme === th.id
-                          ? 'bg-[#CF3A69] text-white ring-2 ring-white/50'
-                          : 'bg-white/10 hover:bg-white/20 text-white/80'
-                      }`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${theme === th.id
+                        ? 'bg-[#CF3A69] text-white ring-2 ring-white/50'
+                        : 'bg-white/10 hover:bg-white/20 text-white/80'
+                        }`}
                     >
                       {lang === 'ar' ? th.nameAr : th.nameEn}
                     </button>

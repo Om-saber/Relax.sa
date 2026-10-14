@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 42" width="100" height="42">
+  <rect width="100" height="42" rx="8" fill="#FFFFFF"/>
+  <g transform="translate(15, 8)">
+    <!-- Tamara Gradient Pill -->
+    <defs>
+      <linearGradient id="tamaraGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#FFBA92"/>
+        <stop offset="50%" stop-color="#F9735A"/>
+        <stop offset="100%" stop-color="#DE4A79"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="2" width="70" height="22" rx="6" fill="url(#tamaraGrad)"/>
+    <!-- tamara text -->
+    <text x="35" y="17" text-anchor="middle" font-family="'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="13" fill="#FFFFFF" letter-spacing="-0.5">tamara</text>
+  </g>
+</svg>

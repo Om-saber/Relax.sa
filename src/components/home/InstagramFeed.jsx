@@ -11,7 +11,7 @@ const InstagramFeed = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 text-center sm:text-right">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 text-center sm:text-start">
           <div>
             <span className="text-xs font-bold text-[#CF3A69] tracking-wider uppercase bg-[#FFEAF0] px-3.5 py-1.5 rounded-full border border-rose-200">
               معرض الصور والأجواء

@@ -14,10 +14,7 @@ import {
   FaTiktok, 
   FaSnapchat, 
   FaXTwitter, 
-  FaFacebookF,
-  FaCcApplePay,
-  FaCcVisa,
-  FaCcMastercard
+  FaFacebookF
 } from 'react-icons/fa6';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -134,6 +131,11 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/packages" className="hover:text-white hover:translate-x-[-3px] inline-block transition-transform text-[#F782A3] font-bold">
+                  {t('navPackages')} 👑
+                </Link>
+              </li>
+              <li>
                 <Link to="/gallery" className="hover:text-white hover:translate-x-[-3px] inline-block transition-transform">
                   {t('navGallery')}
                 </Link>
@@ -211,42 +213,35 @@ const Footer = () => {
               {t('paymentMethods')}
             </h4>
             
-            {/* Payment Icons Badges */}
+            {/* Payment Methods Images Showcase */}
             <div className="flex flex-wrap gap-2 items-center">
-              <span className="bg-white/10 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border border-white/15">
-                <FaCcApplePay className="text-base" /> Apple Pay
-              </span>
-              <span className="bg-white/10 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border border-white/15">
-                <FaCcVisa className="text-base" /> VISA
-              </span>
-              <span className="bg-white/10 px-2.5 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 border border-white/15">
-                <FaCcMastercard className="text-base" /> MasterCard
-              </span>
-              <span className="bg-emerald-900/40 text-emerald-300 px-2.5 py-1.5 rounded-lg text-xs font-bold border border-emerald-500/30">
-                مدى mada
-              </span>
-              <span className="bg-[#2CE5AA]/15 text-[#2CE5AA] px-2.5 py-1.5 rounded-lg text-xs font-bold border border-[#2CE5AA]/30">
-                tabby
-              </span>
-              <span className="bg-[#FF6633]/15 text-[#FF855D] px-2.5 py-1.5 rounded-lg text-xs font-bold border border-[#FF6633]/30">
-                tamara
-              </span>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/apple-pay.svg" alt="Apple Pay" className="h-full w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/mastercard.svg" alt="MasterCard" className="h-full w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/visa.svg" alt="VISA" className="h-full w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/mada.svg" alt="mada" className="h-full w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/tamara.svg" alt="tamara" className="h-full w-full object-contain" />
+              </div>
+              <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">
+                <img src="/images/payments/tabby.svg" alt="tabby" className="h-full w-full object-contain" />
+              </div>
             </div>
 
-            {/* Saudi Business Center Official Verification Badge */}
-            <div className="mt-2 p-3 rounded-2xl bg-gradient-to-r from-white/5 to-white/[0.02] border border-[#D4AF37]/30 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center shrink-0">
-                <FiShield className="text-[#F7E7CE] text-lg" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-white flex items-center gap-1">
-                  {t('businessCenter')}
-                  <FiCheckCircle className="text-emerald-400 text-xs" />
-                </p>
-                <p className="text-[11px] text-amber-200/80">
-                  {t('businessCenterSub')}
-                </p>
-              </div>
+            {/* Saudi Business Center Official Verification Badge Card */}
+            <div className="mt-1 bg-white rounded-2xl p-2.5 shadow-sm border border-white/20 flex items-center justify-between gap-3 hover:shadow-md transition-shadow">
+              <img
+                src="/images/payments/saudi-business-center.svg"
+                alt={t('businessCenter')}
+                className="h-10 w-full object-contain"
+              />
             </div>
 
           </div>

@@ -216,7 +216,7 @@ const HeroSection = () => {
               alt="Let's Relax Luxury Spa"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
-            <div className={`absolute inset-0 flex items-center ${isRTL ? 'bg-gradient-to-r from-[#2A121D]/85 via-[#2A121D]/45 to-transparent' : 'bg-gradient-to-l from-transparent via-[#2A121D]/45 to-[#2A121D]/85'}`}>
+            <div className={`absolute inset-0 flex items-center ${isRTL ? 'bg-gradient-to-l from-transparent via-[#2A121D]/45 to-[#2A121D]/85' : 'bg-gradient-to-r from-[#2A121D]/85 via-[#2A121D]/45 to-transparent'}`}>
               <div className="p-6 sm:p-10 max-w-md text-white space-y-3">
                 <span className="inline-block bg-[#E65A84] text-white text-xs font-bold px-3 py-1 rounded-full">
                   {lang === 'ar' ? 'تجربة استرخاء متكاملة' : 'Complete Wellness Journey'}
