@@ -1,19 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  FiPhone, 
-  FiMail, 
-  FiMapPin, 
-  FiShield, 
-  FiCheckCircle, 
-  FiHeart 
+import {
+  FiPhone,
+  FiMail,
+  FiMapPin,
+  FiShield,
+  FiCheckCircle,
+  FiHeart
 } from 'react-icons/fi';
-import { 
-  FaWhatsapp, 
-  FaInstagram, 
-  FaTiktok, 
-  FaSnapchat, 
-  FaXTwitter, 
+import {
+  FaWhatsapp,
+  FaInstagram,
+  FaTiktok,
+  FaSnapchat,
+  FaXTwitter,
   FaFacebookF
 } from 'react-icons/fa6';
 import { useLanguage } from '../../context/LanguageContext';
@@ -28,10 +28,10 @@ const Footer = () => {
       <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-[#D4AF37]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        
+
         {/* Main Footer Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-white/10">
-          
+
           {/* Col 1: Brand & Bio (4 cols) */}
           <div className="lg:col-span-4 flex flex-col gap-4">
             <Link to="/" className="flex items-center gap-3.5 group">
@@ -212,7 +212,7 @@ const Footer = () => {
               <span className="w-1.5 h-4 bg-[#E65A84] rounded-full inline-block" />
               {t('paymentMethods')}
             </h4>
-            
+
             {/* Payment Methods Images Showcase */}
             <div className="flex flex-wrap gap-2 items-center">
               <div className="bg-white rounded-xl p-1 shadow-xs border border-white/20 hover:scale-105 transition-transform flex items-center justify-center h-9 w-[60px]">

@@ -1,29 +1,33 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
-import { 
-  FiX, 
-  FiCalendar, 
-  FiClock, 
-  FiMapPin, 
-  FiUser, 
-  FiPhone, 
-  FiCheckCircle, 
-  FiArrowRight, 
+import {
+  FiX,
+  FiCalendar,
+  FiClock,
+  FiMapPin,
+  FiUser,
+  FiPhone,
+  FiCheckCircle,
+  FiArrowRight,
   FiArrowLeft,
   FiPlus,
   FiShield,
-  FiShoppingBag
+  FiShoppingBag,
+  FiUsers
 } from 'react-icons/fi';
-import { 
-  FaWhatsapp, 
-  FaCrown 
+import {
+  FaWhatsapp,
+  FaCrown
 } from 'react-icons/fa6';
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAdmin } from '../../context/AdminContext';
 import { CITIES, TIME_SLOTS, ADDONS } from '../../data/servicesData';
 
 const BookingModal = () => {
+  const { addBooking, bookingSettings, staffList } = useAdmin();
   const {
     cart,
     addToCart,
@@ -40,19 +44,51 @@ const BookingModal = () => {
   const { lang, isRTL, t } = useLanguage();
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
 
   if (!isBookingModalOpen) return null;
 
   const handleNext = () => {
+    if (step === 2) {
+      if (bookingSettings?.mandatoryTimeSelection && (!bookingDetails.date || !bookingDetails.timeSlot)) {
+        alert(lang === 'ar' ? 'يرجى اختيار تاريخ الجلسة والفترة الزمنية المناسبة للمتابعة' : 'Please select a session date and time slot');
+        return;
+      }
+    }
     if (step === 3) {
       if (!bookingDetails.name.trim() || !bookingDetails.phone.trim()) {
         alert(lang === 'ar' ? 'يرجى كتابة الاسم ورقم الجوال للتواصل' : 'Please provide your name and phone number');
         return;
       }
     }
+    if (step === 4) {
+      if (bookingSettings?.requireTermsApproval && !agreedToTerms) {
+        alert(lang === 'ar' ? 'يرجى الموافقة على الشروط والأحكام لإتمام الحجز' : 'Please agree to terms and conditions to proceed');
+        return;
+      }
+    }
     if (step < 4) {
       setStep(step + 1);
     } else if (step === 4) {
+      addBooking({
+        customerName: bookingDetails.name,
+        customerPhone: bookingDetails.phone,
+        city: bookingDetails.city || 'الرياض',
+        district: bookingDetails.district || '',
+        address: bookingDetails.address || '',
+        date: bookingDetails.date,
+        timeSlot: bookingDetails.timeSlot,
+        services: cart.map((c) => ({
+          id: c.id,
+          title: c.title,
+          price: c.price,
+          quantity: c.quantity || 1,
+        })),
+        totalPrice: finalTotal,
+        paymentMethod: bookingDetails.paymentMethod,
+        notes: bookingDetails.specialistNote,
+      });
+
       setIsConfirmed(true);
       setStep(5);
       confetti({
@@ -254,11 +290,10 @@ const BookingModal = () => {
                         onClick={() =>
                           setBookingDetails({ ...bookingDetails, timeSlot: slot.time })
                         }
-                        className={`p-3 rounded-xl border text-start transition-all flex items-center justify-between ${
-                          isSelected
+                        className={`p-3 rounded-xl border text-start transition-all flex items-center justify-between ${isSelected
                             ? 'border-[#CF3A69] bg-[#FFF0F3] text-[#CF3A69] shadow-sm'
                             : 'border-rose-100 bg-[#FFFDFE] text-[#5A3F4B] hover:border-rose-200'
-                        }`}
+                          }`}
                       >
                         <div>
                           <p className="text-xs font-bold">{slot.time}</p>
@@ -388,11 +423,10 @@ const BookingModal = () => {
               <div className="space-y-2.5">
                 {/* Tabby */}
                 <label
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    bookingDetails.paymentMethod === 'tabby'
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${bookingDetails.paymentMethod === 'tabby'
                       ? 'border-[#2CE5AA] bg-[#2CE5AA]/10 ring-1 ring-[#2CE5AA]'
                       : 'border-rose-100 hover:border-rose-200 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <input
@@ -421,11 +455,10 @@ const BookingModal = () => {
 
                 {/* Tamara */}
                 <label
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    bookingDetails.paymentMethod === 'tamara'
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${bookingDetails.paymentMethod === 'tamara'
                       ? 'border-[#FF6633] bg-[#FF855D]/10 ring-1 ring-[#FF6633]'
                       : 'border-rose-100 hover:border-rose-200 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <input
@@ -454,11 +487,10 @@ const BookingModal = () => {
 
                 {/* Card / POS */}
                 <label
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    bookingDetails.paymentMethod === 'card'
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${bookingDetails.paymentMethod === 'card'
                       ? 'border-[#CF3A69] bg-[#FFF0F3] ring-1 ring-[#CF3A69]'
                       : 'border-rose-100 hover:border-rose-200 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <input
@@ -484,11 +516,10 @@ const BookingModal = () => {
 
                 {/* Cash */}
                 <label
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
-                    bookingDetails.paymentMethod === 'cash'
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${bookingDetails.paymentMethod === 'cash'
                       ? 'border-[#CF3A69] bg-[#FFF0F3] ring-1 ring-[#CF3A69]'
                       : 'border-rose-100 hover:border-rose-200 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <input
