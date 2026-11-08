@@ -19,7 +19,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { loginWithPhone, quickDemoLogin, user, isAuthenticated, logout } = useAuth();
+  const { requestOtp, loginWithPhone, quickDemoLogin, user, isAuthenticated, logout } = useAuth();
   const { lang, isRTL } = useLanguage();
 
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -28,11 +28,12 @@ const LoginPage = () => {
   const [otpCode, setOtpCode] = useState(['', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [simulatedOtp, setSimulatedOtp] = useState('2468');
+  const [simulatedOtp, setSimulatedOtp] = useState('');
 
-  const handleSendOtp = (e) => {
+  const handleSendOtp = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setIsSubmitting(true);
 
     const cleaned = phoneNumber.replace(/\D/g, '');
     if (cleaned.length < 9) {
@@ -41,12 +42,24 @@ const LoginPage = () => {
           ? 'يرجى إدخال رقم جوال سعودي صحيح (مثال: 0501234567)'
           : 'Please enter a valid Saudi phone number'
       );
+      setIsSubmitting(false);
       return;
     }
 
-    const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
-    setSimulatedOtp(randomOtp);
-    setStep(2);
+    try {
+      const res = await requestOtp(phoneNumber);
+      if (!res.success) {
+        setErrorMsg(res.message || (lang === 'ar' ? 'فشل إرسال الرمز' : 'Failed to send code'));
+        setIsSubmitting(false);
+        return;
+      }
+      if (res.devCode) setSimulatedOtp(res.devCode);
+      setStep(2);
+    } catch (err) {
+      setErrorMsg(err.message || 'حدث خطأ');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleOtpChange = (index, value) => {
@@ -62,6 +75,7 @@ const LoginPage = () => {
   };
 
   const handleAutoFillOtp = () => {
+    if (!simulatedOtp) return;
     const digits = simulatedOtp.split('');
     setOtpCode(digits);
   };
@@ -73,14 +87,36 @@ const LoginPage = () => {
 
     try {
       const code = otpCode.join('');
+      if (code.length !== 4) {
+        setErrorMsg(lang === 'ar' ? 'يرجى إدخال 4 أرقام' : 'Please enter 4 digits');
+        setIsSubmitting(false);
+        return;
+      }
       const res = await loginWithPhone(phoneNumber, code, clientName);
       if (res.success) {
-        navigate(res.redirectPath, { replace: true });
+        navigate('/client-portal', { replace: true });
+      } else {
+        setErrorMsg(res.message || (lang === 'ar' ? 'رمز خاطئ' : 'Invalid code'));
       }
     } catch {
       setErrorMsg(lang === 'ar' ? 'فشل التحقق، يرجى المحاولة ثانية' : 'Verification failed');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setErrorMsg('');
+    try {
+      const res = await requestOtp(phoneNumber);
+      if (res.success && res.devCode) {
+        setSimulatedOtp(res.devCode);
+        setOtpCode(['', '', '', '']);
+      } else if (!res.success) {
+        setErrorMsg(res.message || 'فشل إعادة إرسال الرمز');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'حدث خطأ');
     }
   };
 
@@ -113,7 +149,7 @@ const LoginPage = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <img
-                  src={user.avatar}
+                  src={user.avatar || user.avatarUrl || 'https://via.placeholder.com/44'}
                   alt={user.name}
                   className="w-11 h-11 rounded-full object-cover border-2 border-[#CF3A69]"
                 />
@@ -214,9 +250,18 @@ const LoginPage = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#CF3A69] via-[#E65A84] to-[#CF3A69] text-white font-black text-sm shadow-lg shadow-rose-400/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#CF3A69] via-[#E65A84] to-[#CF3A69] text-white font-black text-sm shadow-lg shadow-rose-400/25 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  <span>{lang === 'ar' ? 'إرسال رمز التحقق (OTP)' : 'Send Verification Code'}</span>
+                  <span>
+                    {isSubmitting
+                      ? lang === 'ar'
+                        ? 'جاري الإرسال...'
+                        : 'Sending...'
+                      : lang === 'ar'
+                      ? 'إرسال رمز التحقق (OTP)'
+                      : 'Send Verification Code'}
+                  </span>
                   {isRTL ? <FiArrowLeft /> : <FiArrowRight />}
                 </button>
 
@@ -251,26 +296,28 @@ const LoginPage = () => {
                   </p>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">💬</span>
-                    <div>
-                      <span className="font-black text-emerald-900 block text-[11px]">
-                        رسالة SMS تجريبية:
-                      </span>
-                      <span className="text-emerald-700 font-bold">
-                        رمز دخول ليتس ريلاكس هو: [{simulatedOtp}]
-                      </span>
+                {simulatedOtp && (
+                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">💬</span>
+                      <div>
+                        <span className="font-black text-emerald-900 block text-[11px]">
+                          رسالة SMS تجريبية:
+                        </span>
+                        <span className="text-emerald-700 font-bold">
+                          رمز دخول ليتس ريلاكس هو: [{simulatedOtp}]
+                        </span>
+                      </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={handleAutoFillOtp}
+                      className="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-black text-[10px] hover:bg-emerald-700 transition-colors shadow-sm"
+                    >
+                      تعبئة تلقائية
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAutoFillOtp}
-                    className="px-2.5 py-1 rounded-xl bg-emerald-600 text-white font-black text-[10px] hover:bg-emerald-700 transition-colors shadow-sm"
-                  >
-                    تعبئة تلقائية
-                  </button>
-                </div>
+                )}
 
                 <div className="flex justify-center gap-3" dir="ltr">
                   {[0, 1, 2, 3].map((idx) => (
@@ -318,10 +365,7 @@ const LoginPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
-                      setSimulatedOtp(newOtp);
-                    }}
+                    onClick={handleResendOtp}
                     className="text-[#CF3A69] hover:underline"
                   >
                     {lang === 'ar' ? 'إعادة إرسال الرمز' : 'Resend code'}
