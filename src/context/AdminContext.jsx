@@ -183,7 +183,7 @@ export const AdminProvider = ({ children }) => {
     if (conflict) {
       return {
         hasConflict: true,
-        specialistName,
+        specialistName: staffName,
         conflictBooking: conflict,
         message: `⚠️ تنبيه تعارض مواعيد خطير! الأخصائية (${staffName}) لديها حجز مسبق بالفعل (${conflict.bookingNumber} - ${conflict.customerName}) في نفس التوقيت: ${date} (${timeSlot}). النظام يمنع الحجز المزدوج تماماً لحماية جودة المواعيد. يرجى اختيار أخصائية أخرى أو توقيت بديل.`,
       };

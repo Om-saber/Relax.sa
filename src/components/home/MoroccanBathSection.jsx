@@ -1,5 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 import { FiDroplet, FiCheckCircle, FiShield, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
 import { FaCrown } from 'react-icons/fa6';
 import { useBooking } from '../../context/BookingContext';
