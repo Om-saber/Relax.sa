@@ -19,7 +19,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { requestOtp, loginWithPhone, quickDemoLogin, user, isAuthenticated, logout } = useAuth();
+  const { requestOtp, loginWithPhone, user, isAuthenticated, logout } = useAuth();
   const { lang, isRTL } = useLanguage();
 
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -120,12 +120,6 @@ const LoginPage = () => {
     }
   };
 
-  const handleDemoClick = (type) => {
-    const loggedUser = quickDemoLogin(type);
-    if (loggedUser.role === 'admin') navigate('/dashboard');
-    else if (loggedUser.role === 'staff') navigate('/staff');
-    else navigate('/client-portal');
-  };
 
   return (
     <div className="min-h-screen pt-28 pb-16 px-4 bg-gradient-to-b from-[#FFF5F7] via-[#FFF9FA] to-white flex items-center justify-center">
@@ -375,52 +369,6 @@ const LoginPage = () => {
             )}
           </AnimatePresence>
 
-          <div className="mt-8 pt-6 border-t border-rose-100">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[11px] font-black text-[#8E717D] flex items-center gap-1">
-                <HiSparkles className="text-[#CF3A69]" />
-                {lang === 'ar' ? 'تجربة سريعة بنقرة واحدة (Demo):' : 'One-Click Demo Access:'}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-start">
-              <button
-                type="button"
-                onClick={() => handleDemoClick('admin')}
-                className="p-2.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200/70 transition-all text-xs font-bold text-purple-900 flex items-center gap-2"
-              >
-                <span className="text-base">👑</span>
-                <div>
-                  <span className="block leading-tight font-black">مدير النظام</span>
-                  <span className="text-[9px] text-purple-600 font-normal">لوحة /dashboard</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoClick('staff')}
-                className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200/70 transition-all text-xs font-bold text-amber-900 flex items-center gap-2"
-              >
-                <span className="text-base">💆‍♀️</span>
-                <div>
-                  <span className="block leading-tight font-black">أخصائية سبا</span>
-                  <span className="text-[9px] text-amber-600 font-normal">مواعيدي والعملاء</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleDemoClick('client')}
-                className="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200/70 transition-all text-xs font-bold text-[#CF3A69] flex items-center gap-2 col-span-2 justify-center"
-              >
-                <span className="text-base">🌸</span>
-                <div>
-                  <span className="leading-tight font-black">عميلة ليتس ريلاكس</span>
-                  <span className="text-[9px] text-rose-500 font-normal block">صفحة مواعيدي وحجوزاتي</span>
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className="text-center mt-6">

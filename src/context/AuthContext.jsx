@@ -10,12 +10,6 @@ export const useAuth = () => {
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
 
-const PRESET_ACCOUNTS = [
-  { phone: '0500000001', user: { id: 'adm-super', name: 'م. عبدالله آل سعود', phone: '0500000001', role: 'admin', roleId: 'super-admin', roleTitle: 'مدير النظام التنفيذي', city: 'الرياض', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80' } },
-  { phone: '0500000002', user: { id: 'adm-cs', name: 'هند الدوسري', phone: '0500000002', role: 'admin', roleId: 'customer-service', roleTitle: 'مسؤولة خدمة العملاء', city: 'الرياض', avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=300&q=80' } },
-  { phone: '0501112233', user: { id: 'st-01', name: 'فاطمة الزهراء البناني', phone: '0501112233', role: 'staff', roleTitle: 'أخصائية أولى حمام مغربي ومساج', city: 'الرياض', avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=300&q=80' } },
-  { phone: '0501234567', user: { id: 'cl-01', name: 'سارة محمد القحطاني', phone: '0501234567', role: 'client', roleTitle: 'عميلة VIP', city: 'الرياض', district: 'حي الملقا', address: 'شارع أنس بن مالك، فيلا 14', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80' } },
-];
 
 const normalizeRole = (backendRole) => {
   const r = (backendRole || '').toUpperCase();
@@ -172,14 +166,6 @@ export const AuthProvider = ({ children }) => {
     return result;
   };
 
-  const quickDemoLogin = (roleType) => {
-    let target = PRESET_ACCOUNTS[0];
-    if (roleType === 'staff') target = PRESET_ACCOUNTS.find((a) => a.user.role === 'staff');
-    else if (roleType === 'client') target = PRESET_ACCOUNTS.find((a) => a.user.role === 'client');
-    else if (roleType === 'cs') target = PRESET_ACCOUNTS.find((a) => a.user.roleId === 'customer-service');
-    setUser(target.user);
-    return target.user;
-  };
 
   const logout = () => {
     setUser(null);
@@ -196,7 +182,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff',
     isClient: user?.role === 'client',
-    requestOtp, verifyOtp, loginWithPhone, loginWithPassword, quickDemoLogin, logout, updateUser,
+    requestOtp, verifyOtp, loginWithPhone, loginWithPassword, logout, updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
