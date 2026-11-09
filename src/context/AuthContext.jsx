@@ -67,6 +67,7 @@ export const verifyOtp = async (phoneNumber, code) => {
       role: normalizeRole(u.role),
       avatarUrl: u.avatarUrl || null,
       avatar: u.avatarUrl || null,
+      permissions: u.permissions || [],
     };
     return {
       success: true,
@@ -79,6 +80,41 @@ export const verifyOtp = async (phoneNumber, code) => {
   } catch (error) {
     console.error('OTP verify failed:', error);
     return { success: false, message: error.message || 'فشل التحقق' };
+  }
+};
+
+export const loginWithPasswordApi = async (email, password) => {
+  try {
+    const res = await fetch(`${API_BASE}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      throw new Error(data.message || 'بريد إلكتروني أو كلمة مرور غير صحيحة');
+    }
+    const u = data.data.user;
+    const userData = {
+      id: u.id,
+      name: u.name || u.email,
+      phone: u.phone,
+      email: u.email,
+      role: normalizeRole(u.role),
+      avatarUrl: u.avatarUrl || null,
+      avatar: u.avatarUrl || null,
+      permissions: u.permissions || [],
+    };
+    return {
+      success: true,
+      user: userData,
+      accessToken: data.data.accessToken,
+      refreshToken: data.data.refreshToken,
+      expiresIn: data.data.expiresIn,
+    };
+  } catch (error) {
+    console.error('Login failed:', error);
+    return { success: false, message: error.message || 'فشل تسجيل الدخول' };
   }
 };
 
@@ -120,6 +156,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const loginWithPassword = async (email, password) => {
+    setLoading(true);
+    const result = await loginWithPasswordApi(email, password);
+    if (result.success) {
+      setUser(result.user);
+      if (result.accessToken) localStorage.setItem('letsrelax_access_token', result.accessToken);
+      if (result.refreshToken) localStorage.setItem('letsrelax_refresh_token', result.refreshToken);
+    }
+    setLoading(false);
+    return result;
+  };
+
   const quickDemoLogin = (roleType) => {
     let target = PRESET_ACCOUNTS[0];
     if (roleType === 'staff') target = PRESET_ACCOUNTS.find((a) => a.user.role === 'staff');
@@ -144,7 +192,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff',
     isClient: user?.role === 'client',
-    requestOtp, verifyOtp, loginWithPhone, quickDemoLogin, logout, updateUser,
+    requestOtp, verifyOtp, loginWithPhone, loginWithPassword, quickDemoLogin, logout, updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
