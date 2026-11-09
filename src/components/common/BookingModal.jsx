@@ -23,6 +23,7 @@ import {
 } from 'react-icons/fa6';
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { bookingsApi } from '../../api/bookingsApi';
 import { useAdmin } from '../../context/AdminContext';
 import { CITIES, TIME_SLOTS, ADDONS } from '../../data/servicesData';
 
@@ -45,10 +46,13 @@ const BookingModal = () => {
   const [step, setStep] = useState(1);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState(null);
+  const [createdBooking, setCreatedBooking] = useState(null);
 
   if (!isBookingModalOpen) return null;
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step === 2) {
       if (bookingSettings?.mandatoryTimeSelection && (!bookingDetails.date || !bookingDetails.timeSlot)) {
         alert(lang === 'ar' ? 'يرجى اختيار تاريخ الجلسة والفترة الزمنية المناسبة للمتابعة' : 'Please select a session date and time slot');
@@ -70,32 +74,54 @@ const BookingModal = () => {
     if (step < 4) {
       setStep(step + 1);
     } else if (step === 4) {
-      addBooking({
-        customerName: bookingDetails.name,
-        customerPhone: bookingDetails.phone,
-        city: bookingDetails.city || 'الرياض',
-        district: bookingDetails.district || '',
-        address: bookingDetails.address || '',
+      await submitBooking();
+    }
+  };
+
+  const submitBooking = async () => {
+    if (cart.length === 0) {
+      setBookingError(lang === 'ar' ? 'يرجى اختيار خدمة واحدة على الأقل' : 'Please select at least one service');
+      return;
+    }
+
+    const CITY_NAME_TO_KEY = { 'الرياض': 'riyadh', 'الخبر': 'khobar', 'الدمام': 'dammam', 'جدة': 'jeddah' };
+    const cityKey = CITY_NAME_TO_KEY[bookingDetails.city] || 'riyadh';
+
+    const slotMatch = TIME_SLOTS.find((s) => s.time === bookingDetails.timeSlot);
+    const slotKey = slotMatch?.id || 'slot-3';
+
+    const PAYMENT_METHOD_MAP = {
+      tabby: 'TABBY', tamara: 'TAMARA', cash: 'CASH',
+      card: 'CARD', applepay: 'APPLE_PAY', apple_pay: 'APPLE_PAY',
+    };
+    const paymentMethod = PAYMENT_METHOD_MAP[(bookingDetails.paymentMethod || '').toLowerCase()];
+
+    setBookingLoading(true);
+    setBookingError(null);
+
+    try {
+      const result = await bookingsApi.create({
+        customerName: bookingDetails.name.trim(),
+        customerPhone: bookingDetails.phone.replace(/\D/g, ''),
+        city: cityKey,
+        district: bookingDetails.district || undefined,
+        address: bookingDetails.address || undefined,
         date: bookingDetails.date,
-        timeSlot: bookingDetails.timeSlot,
-        services: cart.map((c) => ({
-          id: c.id,
-          title: c.title,
-          price: c.price,
-          quantity: c.quantity || 1,
-        })),
-        totalPrice: finalTotal,
-        paymentMethod: bookingDetails.paymentMethod,
-        notes: bookingDetails.specialistNote,
+        timeSlotKey: slotKey,
+        items: cart.map((ci) => ({ serviceSlug: ci.id, quantity: ci.quantity || 1 })),
+        paymentMethod,
+        notes: bookingDetails.specialistNote || undefined,
       });
 
+      setCreatedBooking(result);
       setIsConfirmed(true);
       setStep(5);
-      confetti({
-        particleCount: 80,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+    } catch (err) {
+      console.error('[BookingModal] failed:', err);
+      setBookingError(err.message || (lang === 'ar' ? 'فشل إنشاء الحجز. يرجى المحاولة مرة أخرى.' : 'Failed to create booking.'));
+    } finally {
+      setBookingLoading(false);
     }
   };
 
@@ -544,6 +570,12 @@ const BookingModal = () => {
                 </label>
               </div>
 
+              {bookingError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-300 text-rose-700 text-xs font-bold">
+                  ⚠️ {bookingError}
+                </div>
+              )}
+
               {/* Total Summary */}
               <div className="p-3 rounded-xl bg-[#FFF5F7] border border-rose-100 flex items-center justify-between text-xs">
                 <span className="font-bold text-[#2B151F]">{lang === 'ar' ? 'إجمالي المبلغ للدفع:' : 'Total Payable Amount:'}</span>
@@ -567,6 +599,14 @@ const BookingModal = () => {
                   {t('successDesc')}
                 </p>
               </div>
+
+              {createdBooking && createdBooking.bookingNumber && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#CF3A69] text-white text-sm font-black shadow-md">
+                  <FiCheckCircle />
+                  <span>{lang === 'ar' ? 'رقم الحجز:' : 'Booking #:'}</span>
+                  <span dir="ltr" className="font-mono">{createdBooking.bookingNumber}</span>
+                </div>
+              )}
 
               {/* Summary Card */}
               <div className="p-4 rounded-2xl bg-[#FFF5F7] border border-rose-100 text-start text-xs space-y-1.5 max-w-md mx-auto">
@@ -618,10 +658,17 @@ const BookingModal = () => {
             <button
               type="button"
               onClick={handleNext}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white font-bold text-xs shadow-md shadow-rose-400/20 hover:opacity-95 transition-opacity flex items-center gap-1.5 whitespace-nowrap"
+              disabled={bookingLoading}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white font-bold text-xs shadow-md shadow-rose-400/20 hover:opacity-95 transition-opacity flex items-center gap-1.5 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>{step === 4 ? t('confirmBooking') : t('next')}</span>
-              {isRTL ? <FiArrowLeft /> : <FiArrowRight />}
+              {bookingLoading ? (
+                <span>{lang === 'ar' ? 'جاري الحجز...' : 'Booking...'}</span>
+              ) : (
+                <>
+                  <span>{step === 4 ? t('confirmBooking') : t('next')}</span>
+                  {isRTL ? <FiArrowLeft /> : <FiArrowRight />}
+                </>
+              )}
             </button>
           </div>
         )}
