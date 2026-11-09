@@ -16,6 +16,9 @@ import {
 } from 'react-icons/fi';
 import { FaWhatsapp, FaCrown } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
+import { useMyBookings } from '../hooks/useBookings';
+import { adaptBookings } from '../api/bookingAdapter';
+import { bookingsApi } from '../api/bookingsApi';
 import { useAdmin } from '../context/AdminContext';
 import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -24,7 +27,15 @@ import { TIME_SLOTS } from '../data/servicesData';
 const ClientPortalPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, updateUser } = useAuth();
-  const { bookings, cancelBooking, rescheduleBooking } = useAdmin();
+  const { bookings: mockBookings, cancelBooking, rescheduleBooking } = useAdmin();
+  const { bookings: apiBookings, loading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useMyBookings();
+
+  // API is source of truth. Mock is used ONLY if API errored.
+  const bookings = bookingsLoading
+    ? []
+    : bookingsError
+      ? mockBookings
+      : adaptBookings(apiBookings);
   const { setIsBookingModalOpen } = useBooking();
   const { lang } = useLanguage();
 
@@ -63,6 +74,13 @@ const ClientPortalPage = () => {
   const pastBookings = clientBookings.filter((b) =>
     ['completed', 'cancelled'].includes(b.status)
   );
+
+  // Auto-switch to 'past' tab if no upcoming but there are past bookings
+  React.useEffect(() => {
+    if (!bookingsLoading && upcomingBookings.length === 0 && pastBookings.length > 0 && activeTab === 'upcoming') {
+      setActiveTab('history');
+    }
+  }, [bookingsLoading, upcomingBookings.length, pastBookings.length, activeTab]);
 
   const getStatusBadge = (status) => {
     switch (status) {
