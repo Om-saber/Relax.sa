@@ -20,6 +20,7 @@ import GiftCardsPage from '../pages/GiftCardsPage';
 import AboutPage from '../pages/AboutPage';
 import TermsPage from '../pages/TermsPage';
 import LoginPage from '../pages/LoginPage';
+import StaffLoginPage from '../pages/StaffLoginPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import StaffDashboardPage from '../pages/StaffDashboardPage';
 import ClientPortalPage from '../pages/ClientPortalPage';
@@ -50,6 +51,7 @@ const AppRoutes = () => {
         {/* Dedicated Admin Dashboard Route (Accessed by typing /dashboard in the browser) */}
         <Route path="/dashboard/*" element={<AdminDashboardPage />} />
         <Route path="/admin/*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/staff-login" element={<StaffLoginPage />} />
 
         {/* Public Website Pages & User/Staff Portals */}
         <Route element={<PublicLayout />}>
