@@ -12,7 +12,7 @@ import { HiSparkles } from 'react-icons/hi2';
 import { FaCrown } from 'react-icons/fa6';
 import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
-import { SERVICES, CATEGORIES } from '../data/servicesData';
+import { useServices, useCategories } from '../hooks/useCatalog';
 
 const ServicesPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +28,12 @@ const ServicesPage = () => {
 
   const { addToCart, quickBookService, setActiveServiceModal } = useBooking();
   const { lang, t } = useLanguage();
+
+  // --- Catalog from API (auto-fallback to mock) ---
+  const { services: apiServices } = useServices({}, lang);
+  const { categories: apiCategories } = useCategories(lang);
+  const SERVICES = apiServices;
+  const CATEGORIES = apiCategories;
 
   useEffect(() => {
     const cat = searchParams.get('cat');
@@ -53,7 +59,7 @@ const ServicesPage = () => {
       }
       return c;
     });
-  }, []);
+  }, [apiCategories, apiServices]);
 
   const getCategoryName = (id, fallback) => {
     switch (id) {
@@ -95,7 +101,7 @@ const ServicesPage = () => {
       if (sortBy === 'price-high') return b.price - a.price;
       return 0;
     });
-  }, [activeCategory, searchQuery, durationFilter, sortBy]);
+  }, [apiServices, activeCategory, searchQuery, durationFilter, sortBy]);
 
   return (
     <div className="pt-32 pb-24 min-h-screen bg-[#FFF9FA]">

@@ -9,14 +9,17 @@ import {
 import { FaCrown } from 'react-icons/fa6';
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { SERVICES } from '../../data/servicesData';
+import { useServices } from '../../hooks/useCatalog';
 
 const ServicesGrid = () => {
   const { addToCart, quickBookService, setActiveServiceModal } = useBooking();
   const { lang, t } = useLanguage();
   const [filterType, setFilterType] = useState('all');
 
-  const treatments = SERVICES.filter((s) => s.category !== 'packages');
+  // --- Catalog from API (auto-fallback to mock) ---
+  const { services } = useServices({}, lang);
+
+  const treatments = services.filter((s) => s.category !== 'packages');
 
   const filtered = treatments.filter((t) => {
     if (filterType === 'all') return true;
