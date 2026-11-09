@@ -600,7 +600,7 @@ export const INITIAL_BOOKING_SETTINGS = {
   smsGatewayProvider: 'Taqnyat (تقنيات)',
   senderName: 'Relax-Spa',
   smsRemainingBalance: 1450,
-  smsApiKey: 'sk_live_9a87f6120c8b417e',
+  smsApiKey: 'sk_test_REMOVED_FOR_SECURITY',
   autoResendTimeoutSeconds: 60,
 };
 
