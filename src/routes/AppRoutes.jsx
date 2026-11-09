@@ -9,6 +9,7 @@ import SearchModal from '../components/common/SearchModal';
 import WhatsAppFloating from '../components/common/WhatsAppFloating';
 import Toast from '../components/common/Toast';
 import ScrollToTop from '../components/common/ScrollToTop';
+import ProtectedRoute from '../components/common/ProtectedRoute';
 
 import HomePage from '../pages/HomePage';
 import ServicesPage from '../pages/ServicesPage';
@@ -49,7 +50,14 @@ const AppRoutes = () => {
       <ScrollToTop />
       <Routes>
         {/* Dedicated Admin Dashboard Route (Accessed by typing /dashboard in the browser) */}
-        <Route path="/dashboard/*" element={<AdminDashboardPage />} />
+        <Route
+          path="/dashboard/*"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/admin/*" element={<Navigate to="/dashboard" replace />} />
         <Route path="/staff-login" element={<StaffLoginPage />} />
 
@@ -65,9 +73,30 @@ const AppRoutes = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/staff" element={<StaffDashboardPage />} />
-          <Route path="/client-portal" element={<ClientPortalPage />} />
-          <Route path="/my-bookings" element={<ClientPortalPage />} />
+          <Route
+            path="/staff"
+            element={
+              <ProtectedRoute requiredRole="staff">
+                <StaffDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/client-portal"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <ClientPortalPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-bookings"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <ClientPortalPage />
+              </ProtectedRoute>
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
