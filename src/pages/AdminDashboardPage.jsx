@@ -46,6 +46,7 @@ import {
 import { FaCrown, FaWhatsapp } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminBookings } from '../hooks/useAdminBookings';
 import { useLanguage } from '../context/LanguageContext';
 import { TIME_SLOTS } from '../data/servicesData';
 
@@ -53,7 +54,7 @@ const AdminDashboardPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const {
-    bookings,
+    bookings: mockBookings,
     staffList,
     clients,
     complaints,
@@ -70,7 +71,7 @@ const AdminDashboardPage = () => {
     totalCommissionsPaid,
     checkDoubleBooking,
     addBooking,
-    updateBookingStatus,
+    updateBookingStatus: mockUpdateBookingStatus,
     reassignSpecialist,
     rescheduleBooking,
     cancelBooking,
@@ -89,6 +90,29 @@ const AdminDashboardPage = () => {
     removeBlackoutDate,
     updateCmsContent,
   } = useAdmin();
+
+  // ── Admin Bookings from API (source of truth) ─────────────
+  const {
+    bookings: apiBookings,
+    updateStatus: apiUpdateBookingStatus,
+    loading: adminBookingsLoading,
+    error: adminBookingsError,
+  } = useAdminBookings();
+
+  // API is source of truth. Mock only on API error.
+  const bookings = adminBookingsLoading
+    ? []
+    : adminBookingsError
+      ? mockBookings
+      : apiBookings;
+
+  const updateBookingStatus = async (id, status) => {
+    const res = await apiUpdateBookingStatus(id, status);
+    if (!res.success) {
+      console.error('[AdminDashboard] updateBookingStatus failed:', res.error);
+    }
+    return res;
+  };
 
   const { lang, isRTL } = useLanguage();
   const location = useLocation();

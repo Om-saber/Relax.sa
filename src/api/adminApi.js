@@ -81,4 +81,22 @@ export const adminApi = {
       method: 'PATCH',
       body: JSON.stringify({ permissions }),
     }),
+
+  // ── Bookings ───────────────────────────────────────────
+  getBookings: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.cityKey) q.set('cityKey', params.cityKey);
+    if (params.status) q.set('status', params.status);
+    if (params.search) q.set('search', params.search);
+    if (params.page) q.set('page', String(params.page));
+    if (params.limit) q.set('limit', String(params.limit));
+    const qs = q.toString();
+    return apiFetch(`/admin/bookings${qs ? '?' + qs : ''}`);
+  },
+
+  updateBookingStatus: (id, status) =>
+    apiFetch(`/admin/bookings/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
 };
