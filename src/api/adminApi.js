@@ -1,0 +1,84 @@
+/**
+ * adminApi.js — Frontend wrapper for Admin endpoints
+ *
+ * All endpoints require a Bearer JWT (admin user).
+ * Token is read from localStorage (letsrelax_access_token).
+ */
+
+const API_BASE =
+  import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+
+function getToken() {
+  try {
+    return localStorage.getItem('letsrelax_access_token') || '';
+  } catch {
+    return '';
+  }
+}
+
+async function apiFetch(path, options = {}) {
+  const token = getToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (res.status === 204) return null;
+
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok || json.success === false) {
+    const msg =
+      json?.message ||
+      json?.error?.message ||
+      `API ${res.status}: ${res.statusText}`;
+    throw new Error(msg);
+  }
+
+  return json.data;
+}
+
+export const adminApi = {
+  // ── Users ─────────────────────────────────────────────
+  getUsers: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.roleKey) q.set('roleKey', params.roleKey);
+    if (params.roleId) q.set('roleId', params.roleId);
+    if (params.isActive !== undefined) q.set('isActive', String(params.isActive));
+    if (params.search) q.set('search', params.search);
+    const qs = q.toString();
+    return apiFetch(`/admin/users${qs ? `?${qs}` : ''}`);
+  },
+
+  createUser: (data) =>
+    apiFetch('/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateUser: (id, data) =>
+    apiFetch(`/admin/users/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  deleteUser: (id) =>
+    apiFetch(`/admin/users/${id}`, { method: 'DELETE' }),
+
+  resetPassword: (id) =>
+    apiFetch(`/admin/users/${id}/reset-password`, { method: 'POST' }),
+
+  // ── Roles & Permissions ───────────────────────────────
+  getRoles: () => apiFetch('/admin/roles'),
+
+  getPermissions: () => apiFetch('/admin/permissions'),
+
+  updateRolePermissions: (roleId, permissions) =>
+    apiFetch(`/admin/roles/${roleId}/permissions`, {
+      method: 'PATCH',
+      body: JSON.stringify({ permissions }),
+    }),
+};

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import BookingSettingsTab from '../components/admin/BookingSettingsTab';
+import StaffManagementTab from '../components/admin/StaffManagementTab';
+import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import {
   FiGrid,
   FiCalendar,
@@ -38,6 +40,8 @@ import {
   FiCheck,
   FiTag,
   FiMail,
+  FiUserPlus,
+  FiLock,
 } from 'react-icons/fi';
 import { FaCrown, FaWhatsapp } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
@@ -279,6 +283,8 @@ const AdminDashboardPage = () => {
     { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText },
     { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2 },
     { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: complaints.filter(c => c.status !== 'resolved').length },
+    { id: 'staff-management', label: 'إدارة الموظفات', icon: FiUserPlus },
+    { id: 'roles-permissions', label: 'الأدوار والصلاحيات', icon: FiLock },
   ];
 
   return (
@@ -2258,6 +2264,14 @@ const AdminDashboardPage = () => {
               </div>
             </motion.form>
           </div>
+        )}
+
+        {activeTab === 'staff-management' && (
+          <StaffManagementTab />
+        )}
+
+        {activeTab === 'roles-permissions' && (
+          <RolesPermissionsTab />
         )}
       </AnimatePresence>
     </div>
