@@ -7,7 +7,8 @@ import {
   FiX,
   FiMapPin,
   FiGift,
-  FiGlobe
+  FiGlobe,
+  FiUser
 } from 'react-icons/fi';
 import {
   FaWhatsapp,
@@ -47,9 +48,9 @@ const Navbar = () => {
     { name: t('navHome'), path: '/' },
     { name: t('navServices'), path: '/services' },
     { name: t('navPackages'), path: '/packages', isPackage: true },
-    { name: t('navGallery'), path: '/gallery' },
-    { name: t('navReviews'), path: '/reviews' },
-    { name: t('navGiftCards'), path: '/gift-cards', isGift: true },
+    { name: t('navGallery'), path: '/gallery', hideBelowXl: true },
+    { name: t('navReviews'), path: '/reviews', hideBelowXl: true },
+    { name: t('navGiftCards'), path: '/gift-cards', isGift: true, hideBelowXl: true },
     { name: t('navFaq'), path: '/faq' },
     { name: t('navAbout'), path: '/about' },
   ];
@@ -67,37 +68,37 @@ const Navbar = () => {
           : 'bg-white/92 backdrop-blur-md border-b border-rose-100/70 py-3.5'
           }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-1 xl:gap-3">
 
           {/* BRAND LOGO */}
-          <Link to="/" className="flex items-center gap-3 shrink-0 group">
+          <Link to="/" className="flex items-center gap-2 shrink-0 group">
             <div className="relative shrink-0">
               <img
                 src="/images/logo-icon.png"
                 alt="Let's Relax - Luxury Home Spa"
-                className="h-11 sm:h-12 w-auto object-contain drop-shadow-[0_2px_10px_rgba(207,58,105,0.2)] group-hover:scale-105 transition-transform duration-300"
+                className="h-8 sm:h-9 w-auto object-contain drop-shadow-[0_2px_10px_rgba(207,58,105,0.2)] group-hover:scale-105 transition-transform duration-300"
               />
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="text-xl sm:text-2xl font-serif font-black tracking-tight text-[#2B151F] group-hover:text-[#CF3A69] transition-colors leading-none">
+              <span className="text-base sm:text-lg font-serif font-black tracking-tight text-[#2B151F] group-hover:text-[#CF3A69] transition-colors leading-none">
                 Let's Relax
               </span>
-              <span className="text-[10px] sm:text-[11px] text-[#8E717D] group-hover:text-[#CF3A69]/80 font-bold tracking-wide whitespace-nowrap mt-1 leading-none transition-colors">
+              <span className="text-[8px] sm:text-[9px] text-[#8E717D] group-hover:text-[#CF3A69]/80 font-bold tracking-wide whitespace-nowrap mt-1 leading-none transition-colors">
                 {t('brandSub')}
               </span>
             </div>
           </Link>
 
           {/* DESKTOP NAV LINKS - WITH MANDATORY whitespace-nowrap */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2.5">
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-2">
             {navLinks.map((link) => {
               const isActive = location.pathname === link.path;
               return (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-3 py-2 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap transition-all relative flex items-center gap-1.5 ${isActive
+                  className={`${link.hideBelowXl ? 'hidden xl:flex' : 'flex'} px-2 py-1.5 rounded-xl text-xs xl:text-sm font-bold whitespace-nowrap transition-all relative items-center gap-1.5 ${isActive
                     ? 'text-[#CF3A69] bg-[#FFF0F3]'
                     : 'text-[#4A2838] hover:text-[#CF3A69] hover:bg-[#FFF7F9]'
                     } ${link.isGift ? 'text-[#B02652] bg-gradient-to-r from-rose-50 to-amber-50/50 border border-rose-200/60' : ''}`}
@@ -114,7 +115,7 @@ const Navbar = () => {
           </div>
 
           {/* ACTIONS: LANGUAGE PILL, SEARCH, CART, BOOKING BUTTON */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
 
             {/* Language Switch Button */}
             <button
@@ -137,6 +138,16 @@ const Navbar = () => {
               <FiSearch className="text-base" />
             </button>
 
+            {/* Login Link (clients - OTP at /login) */}
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[#5A3F4B] hover:text-[#CF3A69] hover:bg-[#FFF0F3] border border-rose-200 text-xs font-bold transition-all whitespace-nowrap"
+              title={lang === 'ar' ? 'تسجيل الدخول' : 'Login'}
+            >
+              <FiUser className="text-sm" />
+              <span className="hidden sm:inline">{lang === 'ar' ? 'دخول' : 'Login'}</span>
+            </Link>
+
             {/* Cart Drawer Trigger */}
             <button
               onClick={() => setIsCartOpen(true)}
@@ -154,10 +165,11 @@ const Navbar = () => {
             {/* Quick Book CTA Button */}
             <button
               onClick={() => setIsBookingModalOpen(true)}
-              className="hidden sm:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#CF3A69] via-[#E65A84] to-[#CF3A69] text-white font-black text-xs shadow-md shadow-rose-400/25 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap"
+              title={t('bookNow')}
+              className="hidden sm:inline-flex items-center gap-1 px-2 xl:px-3 py-2 rounded-xl bg-gradient-to-r from-[#CF3A69] via-[#E65A84] to-[#CF3A69] text-white font-black text-xs shadow-md shadow-rose-400/25 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap"
             >
               <FaCrown className="text-[#FFDF78] text-xs shrink-0" />
-              <span>{t('bookNow')}</span>
+              <span className="hidden lg:inline">{t('bookNow')}</span>
             </button>
 
             {/* Mobile Menu Toggle Button */}
