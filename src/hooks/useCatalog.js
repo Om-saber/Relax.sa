@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { catalogApi } from '../api/catalogApi';
-import { adaptServices, adaptCategories } from '../api/serviceAdapter';
+import { adaptServices, adaptCategories, adaptPackages } from '../api/serviceAdapter';
 import { SERVICES, CATEGORIES } from '../data/servicesData';
 
 // ─────────────────────────────────────────
@@ -107,4 +107,38 @@ export function useCities() {
   }, [fetchCities]);
 
   return { cities, loading, error, refetch: fetchCities };
+}
+
+// ─────────────────────────────────────────
+// usePackages — الباقات
+// ─────────────────────────────────────────
+export function usePackages(lang = 'ar') {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  const fetchPackages = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const apiData = await catalogApi.getPackages();
+      setPackages(adaptPackages(apiData, lang));
+      setUsingFallback(false);
+    } catch (err) {
+      console.error('[usePackages] API failed, using fallback:', err);
+      const fallback = SERVICES.filter((s) => s.category === 'packages');
+      setPackages(fallback);
+      setUsingFallback(true);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [lang]);
+
+  useEffect(() => {
+    fetchPackages();
+  }, [fetchPackages]);
+
+  return { packages, loading, error, usingFallback, refetch: fetchPackages };
 }

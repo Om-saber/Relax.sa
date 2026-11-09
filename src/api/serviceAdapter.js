@@ -87,6 +87,79 @@ export function adaptServices(apiServices, lang = 'ar') {
   return apiServices.map((s) => adaptService(s, lang));
 }
 
+
+/**
+ * يحوّل باقة من API → شكل الباقة المستخدم في Components
+ */
+export function adaptPackage(apiPackage, lang = 'ar') {
+  if (!apiPackage) return null;
+
+  const price = toNumber(apiPackage.price);
+  const originalPrice = apiPackage.originalPrice
+    ? toNumber(apiPackage.originalPrice)
+    : null;
+
+  // Extract benefits from items
+  const benefits = (apiPackage.items || [])
+    .map((item) => {
+      const svc = item.service || {};
+      return lang === 'ar' ? svc.titleAr : svc.titleEn || svc.titleAr;
+    })
+    .filter(Boolean);
+
+  // Add default benefits if empty
+  if (benefits.length === 0) {
+    benefits.push(
+      lang === 'ar' ? 'سرير مساج فندقي' : 'Hotel massage bed',
+      lang === 'ar' ? 'مناشف معقمة' : 'Sterile towels',
+      lang === 'ar' ? 'زيوت طبيعية' : 'Natural oils',
+    );
+  }
+
+  return {
+    id: apiPackage.slug || apiPackage.id,
+    slug: apiPackage.slug,
+    apiId: apiPackage.id,
+
+    title: apiPackage.titleAr,
+    titleEn: apiPackage.titleEn || apiPackage.titleAr,
+    description: apiPackage.descriptionAr || '',
+    descriptionEn: apiPackage.descriptionEn || '',
+
+    category: 'packages',
+    categoryIcon: 'Crown',
+
+    price,
+    originalPrice,
+    tabbyInstallment: +(price / 4).toFixed(2),
+
+    duration: formatDuration(apiPackage.durationMinutes, lang),
+    durationMinutes: apiPackage.durationMinutes || 0,
+
+    image: apiPackage.imageUrl || '/images/packages/default.jpg',
+    badge: lang === 'ar'
+      ? 'باقة مميزة'
+      : 'Premium Package',
+    badgeEn: 'Premium Package',
+
+    rating: 5,
+    reviewsCount: 150,
+    maxBeneficiaries: apiPackage.maxBeneficiaries || 1,
+
+    benefits,
+    includes: benefits,
+
+    items: apiPackage.items || [],
+
+    _raw: apiPackage,
+  };
+}
+
+export function adaptPackages(apiPackages, lang = 'ar') {
+  if (!Array.isArray(apiPackages)) return [];
+  return apiPackages.map((p) => adaptPackage(p, lang));
+}
+
 export function adaptCategories(apiCategories, lang = 'ar') {
   if (!Array.isArray(apiCategories)) return [];
 

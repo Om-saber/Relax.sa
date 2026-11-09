@@ -22,7 +22,7 @@ import 'swiper/css/pagination';
 
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { SERVICES } from '../../data/servicesData';
+import { usePackages } from '../../hooks/useCatalog';
 
 const FeaturedPackages = () => {
   const { addToCart, quickBookService, setActiveServiceModal } = useBooking();
@@ -30,8 +30,8 @@ const FeaturedPackages = () => {
   const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Filter packages only
-  const packages = SERVICES.filter((s) => s.category === 'packages');
+  // Packages from API (with mock fallback)
+  const { packages } = usePackages(lang);
 
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-[#FFF9FA] via-white to-[#FFF9FA] relative overflow-hidden">

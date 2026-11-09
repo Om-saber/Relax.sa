@@ -18,7 +18,7 @@ import { HiSparkles } from 'react-icons/hi2';
 import { FaCrown, FaStar, FaWhatsapp } from 'react-icons/fa6';
 import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
-import { SERVICES } from '../data/servicesData';
+import { usePackages } from '../hooks/useCatalog';
 
 const PACKAGE_FILTERS = [
   { id: 'all', nameAr: 'جميع الباقات', nameEn: 'All Packages', icon: '👑' },
@@ -63,10 +63,8 @@ const PackagesPage = () => {
   const { addToCart, quickBookService, setActiveServiceModal, setIsBookingModalOpen } = useBooking();
   const { lang, isRTL, t } = useLanguage();
 
-  // All packages from data
-  const allPackages = useMemo(() => {
-    return SERVICES.filter((s) => s.category === 'packages');
-  }, []);
+  // All packages from API (with mock fallback)
+  const { packages: allPackages } = usePackages(lang);
 
   // Filtered & sorted packages
   const filteredPackages = useMemo(() => {
