@@ -53,7 +53,7 @@ const AppRoutes = () => {
         <Route
           path="/dashboard/*"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredRole="admin" allowPermittedStaff={true}>
               <AdminDashboardPage />
             </ProtectedRoute>
           }

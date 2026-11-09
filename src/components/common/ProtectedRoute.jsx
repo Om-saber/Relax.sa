@@ -14,7 +14,7 @@ import { useAuth } from '../../context/AuthContext';
  * - مسجل بدور غلط → redirect لصفحته المناسبة
  * - مسجل بالدور الصح → يعرض الصفحة
  */
-const ProtectedRoute = ({ children, requiredRole = null }) => {
+const ProtectedRoute = ({ children, requiredRole = null, allowPermittedStaff = false }) => {
   const { user, isAuthenticated, loading } = useAuth();
 
   // Loading state (بدون redirect عشان ما يحصلش flicker)
@@ -40,6 +40,15 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
 
   // مسجل بدور غلط → redirect لصفحته
   if (requiredRole && user?.role !== requiredRole) {
+    // Special case: allow STAFF with permissions on admin routes
+    if (
+      allowPermittedStaff &&
+      user?.role === 'staff' &&
+      Array.isArray(user?.permissions) &&
+      user.permissions.length > 0
+    ) {
+      return children;
+    }
     const roleHome =
       user?.role === 'admin'
         ? '/dashboard'

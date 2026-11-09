@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import BookingSettingsTab from '../components/admin/BookingSettingsTab';
@@ -272,20 +272,36 @@ const AdminDashboardPage = () => {
   // Sidebar Menu Items
   const menuItems = [
     { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid },
-    { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield },
-    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length },
-    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: staffList.length },
-    { id: 'bookings', label: 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length },
-    { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders },
-    { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock },
-    { id: 'cities', label: 'المدن، الفروع ورسوم التنقل', icon: FiMapPin },
-    { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage },
-    { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText },
-    { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2 },
-    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: complaints.filter(c => c.status !== 'resolved').length },
-    { id: 'staff-management', label: 'إدارة الموظفات', icon: FiUserPlus },
-    { id: 'roles-permissions', label: 'الأدوار والصلاحيات', icon: FiLock },
+    { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
+    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length, requiredPermission: 'manageClients' },
+    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: staffList.length, requiredPermission: 'manageStaff' },
+    { id: 'bookings', label: 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
+    { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
+    { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
+    { id: 'cities', label: 'المدن، الفروع ورسوم التنقل', icon: FiMapPin, requiredPermission: 'manageCities' },
+    { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage, requiredPermission: 'manageServices' },
+    { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent' },
+    { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2, requiredPermission: 'viewReports' },
+    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: complaints.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints' },
+    { id: 'staff-management', label: 'إدارة الموظفات', icon: FiUserPlus, requiredPermission: 'manageStaff' },
+    { id: 'roles-permissions', label: 'الأدوار والصلاحيات', icon: FiLock, requiredPermission: 'manageRoles' },
   ];
+
+  // Filter menu items by user's permissions
+  const userPermissions = Array.isArray(user?.permissions) ? user.permissions : [];
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (!item.requiredPermission) return true;
+    return userPermissions.includes(item.requiredPermission);
+  });
+
+  // Redirect to first allowed tab if current tab is forbidden
+  useEffect(() => {
+    const allowedIds = visibleMenuItems.map((m) => m.id);
+    if (activeTab && !allowedIds.includes(activeTab) && visibleMenuItems.length > 0) {
+      setActiveTab(visibleMenuItems[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, visibleMenuItems.map((m) => m.id).join(',')]);
 
   return (
     <div className="flex h-screen w-full bg-[#FFF9FA] text-[#2B151F] overflow-hidden font-sans" dir="rtl">
@@ -373,11 +389,11 @@ const AdminDashboardPage = () => {
             />
             <div className="overflow-hidden flex-1">
               <span className="text-xs font-black text-[#2B151F] block truncate">
-                {user?.role === 'admin' ? user.name : 'م. عبدالله آل سعود'}
+                {user?.name || 'مستخدم'}
               </span>
               <span className="text-[10px] font-bold text-[#CF3A69] flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                {user?.role === 'admin' ? user.roleTitle : 'مدير النظام التنفيذي'}
+                {user?.roleTitle || (user?.role === 'admin' ? 'مدير النظام' : user?.role === 'staff' ? 'موظفة' : 'مستخدمة')}
               </span>
             </div>
           </div>
@@ -385,7 +401,7 @@ const AdminDashboardPage = () => {
 
         {/* Sidebar Nav Links */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-rose-200">
-          {menuItems.map((item) => {
+          {visibleMenuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
 
@@ -452,7 +468,7 @@ const AdminDashboardPage = () => {
             <div>
               <span className="text-[10px] font-bold text-[#8E717D] block">لوحة تحكم الإدارة /</span>
               <h2 className="text-sm sm:text-base font-black text-[#2B151F]">
-                {menuItems.find((m) => m.id === activeTab)?.label}
+                {visibleMenuItems.find((m) => m.id === activeTab)?.label}
               </h2>
             </div>
           </div>

@@ -26,7 +26,11 @@ const StaffLoginPage = () => {
     try {
       const res = await loginWithPassword(email.trim().toLowerCase(), password);
       if (res.success) {
-        const dest = res.user?.role === 'admin' ? '/dashboard' : '/staff';
+        // ADMIN + STAFF with permissions → /dashboard
+        // STAFF without permissions → /staff (their own panel)
+        const hasPermissions = Array.isArray(res.user?.permissions) && res.user.permissions.length > 0;
+        const isAdmin = res.user?.role === 'admin';
+        const dest = isAdmin || hasPermissions ? '/dashboard' : '/staff';
         navigate(dest, { replace: true });
       } else {
         setError(res.message || (isAr ? 'فشل تسجيل الدخول' : 'Login failed'));
