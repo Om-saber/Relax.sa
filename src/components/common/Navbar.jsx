@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   FiSearch,
   FiShoppingBag,
@@ -8,7 +8,9 @@ import {
   FiMapPin,
   FiGift,
   FiGlobe,
-  FiUser
+  FiUser,
+  FiLogOut,
+  FiChevronDown
 } from 'react-icons/fi';
 import {
   FaWhatsapp,
@@ -17,6 +19,7 @@ import {
 import { HiSparkles } from 'react-icons/hi2';
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useAuth } from '../../context/AuthContext';
 import { CITIES } from '../../data/servicesData';
 
 const Navbar = () => {
@@ -32,7 +35,42 @@ const Navbar = () => {
   } = useBooking();
 
   const { lang, toggleLanguage, isRTL, t } = useLanguage();
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  // Close user menu on click outside
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest('[data-user-menu]')) setUserMenuOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [userMenuOpen]);
+
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    navigate('/');
+  };
+
+  const userPortalPath =
+    user?.role === 'admin' ? '/dashboard'
+    : user?.role === 'staff' ? '/staff'
+    : '/client-portal';
+
+  const userPortalLabel =
+    lang === 'ar'
+      ? user?.role === 'admin' ? 'لوحة التحكم'
+        : user?.role === 'staff' ? 'لوحة الموظفة'
+        : 'حسابي'
+      : user?.role === 'admin' ? 'Dashboard'
+        : user?.role === 'staff' ? 'Staff Panel'
+        : 'My Account';
+
+  const firstName = user?.name?.split(' ')[0] || '';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -138,15 +176,72 @@ const Navbar = () => {
               <FiSearch className="text-base" />
             </button>
 
-            {/* Login Link (clients - OTP at /login) */}
-            <Link
-              to="/login"
-              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[#5A3F4B] hover:text-[#CF3A69] hover:bg-[#FFF0F3] border border-rose-200 text-xs font-bold transition-all whitespace-nowrap"
-              title={lang === 'ar' ? 'تسجيل الدخول' : 'Login'}
-            >
-              <FiUser className="text-sm" />
-              <span className="hidden sm:inline">{lang === 'ar' ? 'دخول' : 'Login'}</span>
-            </Link>
+            {/* Auth: Login OR User Menu */}
+            {isAuthenticated && user ? (
+              <div className="relative" data-user-menu>
+                <button
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[#CF3A69] bg-[#FFF0F3] hover:bg-rose-100 border border-rose-200 text-xs font-black transition-all whitespace-nowrap"
+                  title={user.name}
+                >
+                  <FiUser className="text-sm" />
+                  <span className="hidden sm:inline max-w-[90px] truncate">{firstName}</span>
+                  <FiChevronDown className={`text-xs transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute end-0 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-rose-100 overflow-hidden z-50">
+                    {/* User info header */}
+                    <div className="px-4 py-3 bg-gradient-to-br from-rose-50 to-white border-b border-rose-100">
+                      <p className="text-xs font-black text-[#2B151F] truncate">{user.name}</p>
+                      <p className="text-[10px] font-bold text-[#8E717D] mt-0.5" dir="ltr">
+                        {user.phone || user.email || ''}
+                      </p>
+                    </div>
+
+                    {/* Menu items */}
+                    <Link
+                      to={userPortalPath}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-[#4A2838] hover:bg-[#FFF7F9] hover:text-[#CF3A69] transition-colors"
+                    >
+                      <FiUser className="text-sm" />
+                      <span>{userPortalLabel}</span>
+                    </Link>
+
+                    {user.role === 'client' && (
+                      <Link
+                        to="/my-bookings"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-[#4A2838] hover:bg-[#FFF7F9] hover:text-[#CF3A69] transition-colors"
+                      >
+                        <FiShoppingBag className="text-sm" />
+                        <span>{lang === 'ar' ? 'حجوزاتي' : 'My Bookings'}</span>
+                      </Link>
+                    )}
+
+                    <div className="border-t border-rose-100" />
+
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                      <FiLogOut className="text-sm" />
+                      <span>{lang === 'ar' ? 'خروج' : 'Logout'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                to="/login"
+                className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-2 rounded-xl text-[#5A3F4B] hover:text-[#CF3A69] hover:bg-[#FFF0F3] border border-rose-200 text-xs font-bold transition-all whitespace-nowrap"
+                title={lang === 'ar' ? 'تسجيل الدخول' : 'Login'}
+              >
+                <FiUser className="text-sm" />
+                <span className="hidden sm:inline">{lang === 'ar' ? 'دخول' : 'Login'}</span>
+              </Link>
+            )}
 
             {/* Cart Drawer Trigger */}
             <button
