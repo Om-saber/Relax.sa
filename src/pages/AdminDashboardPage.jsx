@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import BookingSettingsTab from '../components/admin/BookingSettingsTab';
 import StaffManagementTab from '../components/admin/StaffManagementTab';
+import ServicesManagementTab from '../components/admin/ServicesManagementTab';
+import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import {
   FiGrid,
@@ -149,6 +151,14 @@ const AdminDashboardPage = () => {
 
   // Filters & Search
   const [bookingFilterCity, setBookingFilterCity] = useState('all');
+  const [adminCategories, setAdminCategories] = useState([]);
+
+  useEffect(() => {
+    catalogApi.getCategories()
+      .then((data) => setAdminCategories(data || []))
+      .catch((err) => console.error('categories fetch failed:', err));
+  }, []);
+
   const [bookingFilterStatus, setBookingFilterStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -552,7 +562,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-emerald-700">
-                  {displayRevenue.toLocaleString()} ر.س
+                  {overviewLoading ? '...' : `${displayRevenue.toLocaleString()} ر.س`}
                 </div>
                 <span className="text-[10px] text-emerald-600 font-bold block mt-1">
                   +18% نمو المبيعات
@@ -566,7 +576,7 @@ const AdminDashboardPage = () => {
                     <FiCalendar />
                   </div>
                 </div>
-                <div className="text-2xl font-black text-blue-700">{displayActiveBookings}</div>
+                <div className="text-2xl font-black text-blue-700">{overviewLoading ? '...' : displayActiveBookings}</div>
                 <span className="text-[10px] text-blue-600 font-bold block mt-1">
                   {displayPendingBookings} حجز قيد التأكيد الفوري
                 </span>
@@ -580,7 +590,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-purple-700">
-                  {displayStaffAvailable} / {displayStaffTotal}
+                  {overviewLoading ? '...' : `${displayStaffAvailable} / ${displayStaffTotal}`}
                 </div>
                 <span className="text-[10px] text-purple-600 font-bold block mt-1">
                   متاحة للزيارات المنزلية
@@ -595,7 +605,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-amber-700">
-                  {displayCommissions.toFixed(0)} ر.س
+                  {overviewLoading ? '...' : `${displayCommissions.toFixed(0)} ر.س`}
                 </div>
                 <span className="text-[10px] text-amber-600 font-bold block mt-1">
                   مستحقات الجلسات المنجزة
@@ -1452,60 +1462,9 @@ const AdminDashboardPage = () => {
         {/* TAB 8: SERVICES & PACKAGES */}
         {/* ============================================================== */}
         {activeTab === 'services' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-base font-black text-[#2B151F]">
-                إدارة الخدمات، الباقات، الأسعار، والمدد الفندقية
-              </h3>
-              <p className="text-xs text-[#8E717D]">
-                التحكم بالأسعار والعروض لتتحدث فوراً على الموقع والعميلات
-              </p>
-            </div>
-
-            <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm overflow-x-auto">
-              <table className="w-full text-xs text-start">
-                <thead className="bg-[#FFF5F7] text-[#5A3F4B] font-black border-b border-rose-100">
-                  <tr>
-                    <th className="p-3 text-start">الخدمة / الباقة</th>
-                    <th className="p-3 text-start">التصنيف</th>
-                    <th className="p-3 text-start">المدة الفندقية</th>
-                    <th className="p-3 text-start">السعر الحالي</th>
-                    <th className="p-3 text-start">إجراء التعديل</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-rose-50 font-bold">
-                  {servicesList.map((svc) => (
-                    <tr key={svc.id}>
-                      <td className="p-3">
-                        <div className="font-black text-[#2B151F]">{svc.title}</div>
-                      </td>
-                      <td className="p-3 text-[#8E717D]">{svc.category}</td>
-                      <td className="p-3">{svc.duration}</td>
-                      <td className="p-3 font-black text-[#CF3A69]">{svc.price} ر.س</td>
-                      <td className="p-3">
-                        <button
-                          onClick={() => {
-                            const newP = prompt(`أدخلي السعر الجديد لخدمة (${svc.title}):`, svc.price);
-                            if (newP && !isNaN(newP)) {
-                              updateServicePrice(svc.id, newP);
-                            }
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-rose-50 text-[#CF3A69] hover:bg-rose-100 font-bold"
-                        >
-                          تعديل السعر
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <ServicesManagementTab categories={adminCategories} />
         )}
 
-        {/* ============================================================== */}
-        {/* TAB 9: CMS & SITE CONTENT */}
-        {/* ============================================================== */}
         {activeTab === 'cms' && (
           <div className="space-y-6">
             <div>

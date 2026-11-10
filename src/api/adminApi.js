@@ -85,6 +85,34 @@ export const adminApi = {
   // ── Overview ───────────────────────────────────────────
   getOverview: () => apiFetch('/admin/overview'),
 
+  // ── Services (CRUD) ─────────────────────────────────────
+  getServices: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.categoryKey) q.set('categoryKey', params.categoryKey);
+    if (params.search) q.set('search', params.search);
+    if (params.isActive !== undefined) q.set('isActive', String(params.isActive));
+    const qs = q.toString();
+    return apiFetch(`/admin/services${qs ? '?' + qs : ''}`);
+  },
+
+  createService: (data) =>
+    apiFetch('/admin/services', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateService: (id, data) =>
+    apiFetch(`/admin/services/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  toggleService: (id) =>
+    apiFetch(`/admin/services/${id}/toggle`, { method: 'PATCH' }),
+
+  deleteService: (id) =>
+    apiFetch(`/admin/services/${id}`, { method: 'DELETE' }),
+
   // ── Bookings ───────────────────────────────────────────
   getBookings: (params = {}) => {
     const q = new URLSearchParams();

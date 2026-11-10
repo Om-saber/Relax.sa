@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 const AuthContext = createContext();
 
@@ -116,6 +116,32 @@ export const loginWithPasswordApi = async (email, password) => {
   }
 };
 
+export const refreshAccessToken = async () => {
+  try {
+    const storedRefresh = localStorage.getItem('letsrelax_refresh_token');
+    if (!storedRefresh) throw new Error('No refresh token');
+
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: storedRefresh }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || 'Refresh failed');
+
+    if (data.data?.accessToken) {
+      localStorage.setItem('letsrelax_access_token', data.data.accessToken);
+    }
+    if (data.data?.refreshToken) {
+      localStorage.setItem('letsrelax_refresh_token', data.data.refreshToken);
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('[refreshAccessToken] failed:', err);
+    return { success: false, error: err.message };
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
@@ -130,6 +156,40 @@ export const AuthProvider = ({ children }) => {
       if (user) localStorage.setItem('letsrelax_auth_user', JSON.stringify(user));
       else localStorage.removeItem('letsrelax_auth_user');
     } catch (e) { console.error('sync failed', e); }
+  }, [user]);
+
+  // Auto-refresh access token every 14 minutes (token TTL is 15m)
+  const refreshIntervalRef = useRef(null);
+
+  useEffect(() => {
+    if (!user) {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      return;
+    }
+
+    const doRefresh = async () => {
+      const result = await refreshAccessToken();
+      if (!result.success) {
+        console.warn('[auto-refresh] failed — logging out');
+        setUser(null);
+        localStorage.removeItem('letsrelax_auth_user');
+        localStorage.removeItem('letsrelax_access_token');
+        localStorage.removeItem('letsrelax_refresh_token');
+      }
+    };
+
+    // Delay first refresh to 14 min (let login flow finish)
+    refreshIntervalRef.current = setInterval(doRefresh, 14 * 60 * 1000);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+    };
   }, [user]);
 
   const loginWithPhone = async (phoneNumber, otpCode = null, name = '') => {
@@ -182,7 +242,7 @@ export const AuthProvider = ({ children }) => {
     isAdmin: user?.role === 'admin',
     isStaff: user?.role === 'staff',
     isClient: user?.role === 'client',
-    requestOtp, verifyOtp, loginWithPhone, loginWithPassword, logout, updateUser,
+    requestOtp, verifyOtp, loginWithPhone, loginWithPassword, logout, updateUser, refreshAccessToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
