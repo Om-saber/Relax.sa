@@ -113,6 +113,27 @@ export const adminApi = {
   deleteService: (id) =>
     apiFetch(`/admin/services/${id}`, { method: 'DELETE' }),
 
+  // ── Cities (CRUD) ───────────────────────────────────────
+  getCities: () => apiFetch('/admin/cities'),
+
+  createCity: (data) =>
+    apiFetch('/admin/cities', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateCity: (id, data) =>
+    apiFetch(`/admin/cities/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  toggleCity: (id) =>
+    apiFetch(`/admin/cities/${id}/toggle`, { method: 'PATCH' }),
+
+  deleteCity: (id) =>
+    apiFetch(`/admin/cities/${id}`, { method: 'DELETE' }),
+
   // ── Bookings ───────────────────────────────────────────
   getBookings: (params = {}) => {
     const q = new URLSearchParams();

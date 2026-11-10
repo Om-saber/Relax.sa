@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-do
 import BookingSettingsTab from '../components/admin/BookingSettingsTab';
 import StaffManagementTab from '../components/admin/StaffManagementTab';
 import ServicesManagementTab from '../components/admin/ServicesManagementTab';
+import CitiesManagementTab from '../components/admin/CitiesManagementTab';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import {
@@ -1257,9 +1258,18 @@ const AdminDashboardPage = () => {
                         </td>
                         <td className="p-4 whitespace-nowrap">
                           <span className="font-black text-[#2B151F]">{b.totalPrice} ر.س</span>
-                          <span className="block text-[10px] text-emerald-600 font-bold">
-                            {b.paymentMethod}
-                          </span>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className={`text-[10px] font-black px-1.5 py-0.5 rounded border ${
+                              String(b.paymentStatus).toUpperCase() === 'PAID'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-gray-100 text-gray-500 border-gray-200'
+                            }`}>
+                              {String(b.paymentStatus).toUpperCase() === 'PAID' ? '✓ مدفوع' : 'غير مدفوع'}
+                            </span>
+                            <span className="text-[10px] text-[#8E717D] font-mono">
+                              {b.paymentMethod || '—'}
+                            </span>
+                          </div>
                         </td>
                         <td className="p-4 whitespace-nowrap">
                           <select
@@ -1399,68 +1409,9 @@ const AdminDashboardPage = () => {
         {/* TAB 7: CITIES & PRICING */}
         {/* ============================================================== */}
         {activeTab === 'cities' && (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-base font-black text-[#2B151F]">
-                إدارة المدن، الفروع، الأحياء، ورسوم التنقل
-              </h3>
-              <p className="text-xs text-[#8E717D]">
-                تحديد مناطق التغطية، حساب رسوم الانتقال لكل مدينة، وتسعير الخدمات حسب كل منطقة
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {cityConfigs.map((city) => (
-                <div
-                  key={city.id}
-                  className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm space-y-3"
-                >
-                  <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-black text-[#2B151F]">{city.name}</h4>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        city.active
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {city.active ? 'مفعل' : 'قريباً'}
-                    </span>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs text-[#5A3F4B] font-bold">
-                    <div className="flex justify-between">
-                      <span className="text-[#8E717D]">مدير الفرع:</span>
-                      <span>{city.branchManager}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#8E717D]">رسوم التنقل:</span>
-                      <span className="text-[#CF3A69]">{city.deliveryFee} ر.س</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-rose-100">
-                    <span className="text-[10px] text-[#8E717D] block mb-1">الأحياء المشمولة:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {city.coverageAreas?.slice(0, 4).map((area, idx) => (
-                        <span
-                          key={idx}
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-700 font-bold"
-                        >
-                          {area}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <CitiesManagementTab />
         )}
 
-        {/* ============================================================== */}
-        {/* TAB 8: SERVICES & PACKAGES */}
-        {/* ============================================================== */}
         {activeTab === 'services' && (
           <ServicesManagementTab categories={adminCategories} />
         )}
