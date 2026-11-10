@@ -54,7 +54,6 @@ const AdminDashboardPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const {
-    bookings: mockBookings,
     staffList,
     clients,
     complaints,
@@ -99,12 +98,8 @@ const AdminDashboardPage = () => {
     error: adminBookingsError,
   } = useAdminBookings();
 
-  // API is source of truth. Mock only on API error.
-  const bookings = adminBookingsLoading
-    ? []
-    : adminBookingsError
-      ? mockBookings
-      : apiBookings;
+  // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
+  const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
 
   const updateBookingStatus = async (id, status) => {
     const res = await apiUpdateBookingStatus(id, status);
@@ -1134,6 +1129,11 @@ const AdminDashboardPage = () => {
         {/* ============================================================== */}
         {activeTab === 'bookings' && (
           <div className="space-y-6">
+            {adminBookingsError && (
+              <div className="text-xs font-bold px-4 py-3 rounded-2xl border bg-amber-50 text-amber-800 border-amber-200">
+                تعذّر تحميل الحجوزات من الخادم. أعيدي تحميل الصفحة أو تحققي من الاتصال.
+              </div>
+            )}
             <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-3 flex-1 flex-wrap">
                 <div className="relative flex-1 min-w-[200px] max-w-md">

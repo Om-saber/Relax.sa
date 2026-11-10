@@ -20,7 +20,6 @@ import { useMyBookings } from '../hooks/useBookings';
 import { adaptBookings } from '../api/bookingAdapter';
 import { bookingsApi } from '../api/bookingsApi';
 import { paymentsApi } from '../api/paymentsApi';
-import { useAdmin } from '../context/AdminContext';
 import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
 import { TIME_SLOTS } from '../data/servicesData';
@@ -28,15 +27,10 @@ import { TIME_SLOTS } from '../data/servicesData';
 const ClientPortalPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, updateUser } = useAuth();
-  const { bookings: mockBookings, cancelBooking, rescheduleBooking } = useAdmin();
   const { bookings: apiBookings, loading: bookingsLoading, error: bookingsError, refetch: refetchBookings } = useMyBookings();
 
-  // API is source of truth. Mock is used ONLY if API errored.
-  const bookings = bookingsLoading
-    ? []
-    : bookingsError
-      ? mockBookings
-      : adaptBookings(apiBookings);
+  // الـ API هو المصدر الوحيد للحقيقة — لا رجوع أبدًا لبيانات تجريبية.
+  const bookings = bookingsLoading || bookingsError ? [] : adaptBookings(apiBookings);
   const { setIsBookingModalOpen } = useBooking();
   const { lang } = useLanguage();
 
@@ -44,6 +38,8 @@ const ClientPortalPage = () => {
   const [activeTab, setActiveTab] = useState('upcoming');
   const [payingBookingId, setPayingBookingId] = useState(null);
   const [paymentNotice, setPaymentNotice] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
+  const [rescheduling, setRescheduling] = useState(false);
   
   const [rescheduleModal, setRescheduleModal] = useState({
     isOpen: false,
@@ -117,34 +113,52 @@ const ClientPortalPage = () => {
       isOpen: true,
       booking,
       newDate: booking.date,
-      newSlot: booking.timeSlot,
+      newSlot: booking.timeSlotKey || '',
       error: '',
     });
   };
 
-  const handleConfirmReschedule = () => {
+  const handleConfirmReschedule = async () => {
     if (!rescheduleModal.newDate || !rescheduleModal.newSlot) {
       setRescheduleModal((prev) => ({ ...prev, error: 'يرجى اختيار التاريخ والوقت الجديد' }));
       return;
     }
 
-    const res = rescheduleBooking(
-      rescheduleModal.booking.id,
-      rescheduleModal.newDate,
-      rescheduleModal.newSlot
-    );
-
-    if (res.success) {
+    setRescheduling(true);
+    try {
+      await bookingsApi.reschedule(
+        rescheduleModal.booking.id,
+        rescheduleModal.newDate,
+        rescheduleModal.newSlot
+      );
       setRescheduleModal({ isOpen: false, booking: null, newDate: '', newSlot: '', error: '' });
-      alert('تمت إعادة جدولة موعدك بنجاح! 🌸');
-    } else {
-      setRescheduleModal((prev) => ({ ...prev, error: res.error }));
+      await refetchBookings();
+      setPaymentNotice({ type: 'success', text: 'تمت إعادة جدولة موعدكِ بنجاح 🌸' });
+    } catch (err) {
+      setRescheduleModal((prev) => ({
+        ...prev,
+        error: err?.message || 'تعذّرت إعادة الجدولة. حاولي مرة أخرى.',
+      }));
+    } finally {
+      setRescheduling(false);
     }
   };
 
-  const handleCancelBooking = (bookingId) => {
-    if (window.confirm('هل أنتِ متأكدة من رغبتك بإلغاء هذا الموعد؟')) {
-      cancelBooking(bookingId, 'إلغاء من خلال صفحة العميل');
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('هل أنتِ متأكدة من رغبتك بإلغاء هذا الموعد؟')) return;
+
+    setCancellingId(bookingId);
+    try {
+      await bookingsApi.cancel(bookingId, 'إلغاء من خلال صفحة العميل');
+      await refetchBookings();
+      setPaymentNotice({ type: 'success', text: 'تم إلغاء الموعد بنجاح.' });
+    } catch (err) {
+      setPaymentNotice({
+        type: 'error',
+        text: err?.message || 'تعذّر إلغاء الموعد. حاولي مرة أخرى.',
+      });
+    } finally {
+      setCancellingId(null);
     }
   };
 
@@ -315,9 +329,21 @@ const ClientPortalPage = () => {
           </div>
         )}
 
+        {bookingsError && (
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-xs font-bold px-4 py-3 rounded-2xl border bg-amber-50 text-amber-800 border-amber-200">
+            <span>تعذّر تحميل حجوزاتكِ الآن. تأكدي من الاتصال ثم أعيدي المحاولة.</span>
+            <button
+              type="button"
+              onClick={() => refetchBookings()}
+              className="px-4 py-2 rounded-xl bg-amber-600 text-white text-[11px] font-black hover:bg-amber-700"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        )}
+
         {/* Tabs */}
-        <div className="flex items-center gap-2 mb-6 border-b border-rose-100 pb-3">
-          <button
+        <div className="flex items-center gap-2 mb-6 border-b border-rose-100 pb-3">          <button
             onClick={() => setActiveTab('upcoming')}
             className={`px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'upcoming'
@@ -629,9 +655,10 @@ const ClientPortalPage = () => {
                         {booking.status === 'pending' || booking.status === 'confirmed' ? (
                           <button
                             onClick={() => handleCancelBooking(booking.id)}
-                            className="px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 text-xs font-bold transition-colors"
+                            disabled={cancellingId === booking.id}
+                            className="px-3 py-2 rounded-xl text-rose-500 hover:bg-rose-50 text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            إلغاء الموعد
+                            {cancellingId === booking.id ? 'جاري الإلغاء...' : 'إلغاء الموعد'}
                           </button>
                         ) : null}
                       </div>
@@ -757,7 +784,7 @@ const ClientPortalPage = () => {
                       className="w-full px-4 py-3 rounded-2xl bg-[#FFF9FA] border border-rose-200 outline-none text-xs font-bold"
                     >
                       {TIME_SLOTS.map((slot) => (
-                        <option key={slot.id} value={slot.time}>
+                        <option key={slot.id} value={slot.id}>
                           {slot.time} ({slot.period})
                         </option>
                       ))}
@@ -768,9 +795,10 @@ const ClientPortalPage = () => {
                     <button
                       type="button"
                       onClick={handleConfirmReschedule}
-                      className="flex-1 py-3 rounded-2xl bg-[#CF3A69] text-white text-xs font-black shadow-md hover:bg-[#b02652]"
+                      disabled={rescheduling}
+                      className="flex-1 py-3 rounded-2xl bg-[#CF3A69] text-white text-xs font-black shadow-md hover:bg-[#b02652] disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      تأكيد الموعد الجديد
+                      {rescheduling ? 'جاري الحفظ...' : 'تأكيد الموعد الجديد'}
                     </button>
                     <button
                       type="button"
