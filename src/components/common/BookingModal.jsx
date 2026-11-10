@@ -24,6 +24,7 @@ import {
 import { useBooking } from '../../context/BookingContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { bookingsApi } from '../../api/bookingsApi';
+import { paymentsApi } from '../../api/paymentsApi';
 import { useAdmin } from '../../context/AdminContext';
 import { CITIES, TIME_SLOTS, ADDONS } from '../../data/servicesData';
 
@@ -93,6 +94,7 @@ const BookingModal = () => {
     const PAYMENT_METHOD_MAP = {
       tabby: 'TABBY', tamara: 'TAMARA', cash: 'CASH',
       card: 'CARD', applepay: 'APPLE_PAY', apple_pay: 'APPLE_PAY',
+      paypal: 'CARD',
     };
     const paymentMethod = PAYMENT_METHOD_MAP[(bookingDetails.paymentMethod || '').toLowerCase()];
 
@@ -108,12 +110,33 @@ const BookingModal = () => {
         address: bookingDetails.address || undefined,
         date: bookingDetails.date,
         timeSlotKey: slotKey,
-        items: cart.map((ci) => ({ serviceSlug: ci.id, quantity: ci.quantity || 1 })),
+        items: cart
+          .filter((ci) => ci.category !== 'addon')
+          .map((ci) => ({ serviceSlug: ci.id, quantity: ci.quantity || 1 })),
         paymentMethod,
         notes: bookingDetails.specialistNote || undefined,
       });
 
       setCreatedBooking(result);
+
+      // إذا اختارت العميلة PayPal — نحاول التوجيه للدفع قبل صفحة النجاح
+      if (bookingDetails.paymentMethod === 'paypal') {
+        try {
+          const pp = await paymentsApi.createPayPalOrder(result.id);
+          if (pp && pp.approvalUrl) {
+            window.location.href = pp.approvalUrl;
+            return;
+          }
+        } catch (ppErr) {
+          console.error('[PayPal redirect] failed:', ppErr);
+          setBookingError(
+            lang === 'ar'
+              ? 'تم إنشاء حجزكِ، لكن تعذّر الاتصال بـ PayPal. يمكنكِ الدفع لاحقًا من بوابة العميلة.'
+              : 'Booking created, but PayPal failed. You can pay later from your portal.'
+          );
+        }
+      }
+
       setIsConfirmed(true);
       setStep(5);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
@@ -568,6 +591,38 @@ const BookingModal = () => {
                   </div>
                   <span className="text-xs text-rose-500 font-bold">💵 Cash</span>
                 </label>
+
+                {/* PayPal */}
+                <label
+                  className={`p-3.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${bookingDetails.paymentMethod === 'paypal'
+                      ? 'border-[#0070BA] bg-[#0070BA]/10 ring-1 ring-[#0070BA]'
+                      : 'border-rose-100 hover:border-rose-200 bg-white'
+                    }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={bookingDetails.paymentMethod === 'paypal'}
+                      onChange={() =>
+                        setBookingDetails({ ...bookingDetails, paymentMethod: 'paypal' })
+                      }
+                      className="accent-[#0070BA]"
+                    />
+                    <div>
+                      <p className="font-bold text-xs text-[#2B151F] flex items-center gap-2">
+                        <span>{lang === 'ar' ? 'PayPal - ادفعي أونلاين الآن' : 'PayPal - Pay online now'}</span>
+                        <span className="text-[10px] bg-[#0070BA]/20 text-[#0070BA] px-2 py-0.5 rounded-md font-black">
+                          {lang === 'ar' ? 'آمن' : 'Secure'}
+                        </span>
+                      </p>
+                      <p className="text-[11px] text-[#8E717D] mt-0.5">
+                        {lang === 'ar' ? 'ادفعي بأمان عبر PayPal Sandbox (تجريبي)' : 'Pay securely via PayPal (Sandbox - Test)'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-black text-[#0070BA] text-sm">PayPal</span>
+                </label>
               </div>
 
               {bookingError && (
@@ -624,9 +679,15 @@ const BookingModal = () => {
                 </div>
                 <div className="flex justify-between border-t border-rose-200/60 pt-1.5">
                   <span className="text-[#8E717D]">{lang === 'ar' ? 'المبلغ الإجمالي:' : 'Total Amount:'}</span>
-                  <span className="font-black text-[#CF3A69]">{finalTotal} {t('currency')}</span>
+                  <span className="font-black text-[#CF3A69]">{Number(createdBooking?.totalPrice ?? finalTotal).toFixed(0)} {t('currency')}</span>
                 </div>
               </div>
+
+              {bookingError && (
+                <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-xs font-bold max-w-md mx-auto">
+                  ⚠️ {bookingError}
+                </div>
+              )}
 
               {/* Direct WhatsApp Confirmation Trigger */}
               <button
