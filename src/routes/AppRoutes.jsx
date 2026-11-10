@@ -25,6 +25,8 @@ import StaffLoginPage from '../pages/StaffLoginPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import StaffDashboardPage from '../pages/StaffDashboardPage';
 import ClientPortalPage from '../pages/ClientPortalPage';
+import PaymentSuccessPage from '../pages/PaymentSuccessPage';
+import PaymentFailurePage from '../pages/PaymentFailurePage';
 
 const PublicLayout = () => {
   return (
@@ -97,6 +99,8 @@ const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/failure" element={<PaymentFailurePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

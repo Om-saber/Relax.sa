@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMyBookings } from '../hooks/useBookings';
 import { adaptBookings } from '../api/bookingAdapter';
 import { bookingsApi } from '../api/bookingsApi';
+import { paymentsApi } from '../api/paymentsApi';
 import { useAdmin } from '../context/AdminContext';
 import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -41,6 +42,8 @@ const ClientPortalPage = () => {
 
   const [lookupPhone, setLookupPhone] = useState('');
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [payingBookingId, setPayingBookingId] = useState(null);
+  const [paymentNotice, setPaymentNotice] = useState(null);
   
   const [rescheduleModal, setRescheduleModal] = useState({
     isOpen: false,
@@ -142,6 +145,41 @@ const ClientPortalPage = () => {
   const handleCancelBooking = (bookingId) => {
     if (window.confirm('هل أنتِ متأكدة من رغبتك بإلغاء هذا الموعد؟')) {
       cancelBooking(bookingId, 'إلغاء من خلال صفحة العميل');
+    }
+  };
+
+  const handlePayWithPayPal = async (booking) => {
+    setPaymentNotice(null);
+    setPayingBookingId(booking.id);
+
+    try {
+      const data = await paymentsApi.createPayPalOrder(booking.id);
+
+      // طلب سابق تم تأكيده/تحصيله بالفعل
+      if (data?.alreadyPaid || data?.captured) {
+        await refetchBookings();
+        setPaymentNotice({
+          type: 'success',
+          text: data?.captured
+            ? 'تم تأكيد دفعتكِ بنجاح ✅'
+            : 'هذا الحجز مدفوع بالفعل ✅',
+        });
+        return;
+      }
+
+      if (!data?.approvalUrl) {
+        throw new Error('تعذّر الحصول على رابط الدفع من PayPal. حاولي مرة أخرى.');
+      }
+
+      // الانتقال إلى صفحة الموافقة على PayPal
+      window.location.href = data.approvalUrl;
+    } catch (err) {
+      setPaymentNotice({
+        type: 'error',
+        text: err?.message || 'تعذّر بدء عملية الدفع. حاولي مرة أخرى.',
+      });
+    } finally {
+      setPayingBookingId(null);
     }
   };
 
@@ -318,6 +356,26 @@ const ClientPortalPage = () => {
           </button>
         </div>
 
+        {paymentNotice && (
+          <div
+            className={`mb-5 flex items-start justify-between gap-3 text-xs font-bold px-4 py-3 rounded-2xl border ${
+              paymentNotice.type === 'success'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                : 'bg-rose-50 text-rose-700 border-rose-200'
+            }`}
+          >
+            <span className="leading-relaxed">{paymentNotice.text}</span>
+            <button
+              type="button"
+              onClick={() => setPaymentNotice(null)}
+              className="shrink-0 hover:opacity-70"
+              aria-label="إغلاق"
+            >
+              <FiX />
+            </button>
+          </div>
+        )}
+
         {/* UPCOMING APPOINTMENTS */}
         {activeTab === 'upcoming' && (
           <div className="space-y-6">
@@ -357,6 +415,11 @@ const ClientPortalPage = () => {
                         <span className="text-xs text-[#8E717D]">
                           حجز مؤكد عبر الموقع
                         </span>
+                        {booking.paymentStatus === 'paid' && (
+                          <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            مدفوع ✅
+                          </span>
+                        )}
                       </div>
 
                       <span className={`text-xs font-black px-3 py-1.5 rounded-xl border ${statusBadge.color}`}>
@@ -541,7 +604,19 @@ const ClientPortalPage = () => {
                         <span>معايير تعقيم فندقية وأدوات استخدام لمرة واحدة</span>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {booking.paymentStatus !== 'paid' && (
+                          <button
+                            onClick={() => handlePayWithPayPal(booking)}
+                            disabled={payingBookingId === booking.id}
+                            className="px-4 py-2 rounded-xl bg-[#0070BA] hover:bg-[#005c99] disabled:opacity-60 disabled:cursor-wait text-white text-xs font-black shadow-sm transition-colors"
+                          >
+                            {payingBookingId === booking.id
+                              ? 'جاري التحويل إلى PayPal...'
+                              : 'ادفعي الآن عبر PayPal'}
+                          </button>
+                        )}
+
                         {booking.status !== 'in_progress' && (
                           <button
                             onClick={() => handleOpenReschedule(booking)}
