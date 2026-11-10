@@ -5,6 +5,7 @@ import BookingSettingsTab from '../components/admin/BookingSettingsTab';
 import StaffManagementTab from '../components/admin/StaffManagementTab';
 import ServicesManagementTab from '../components/admin/ServicesManagementTab';
 import CitiesManagementTab from '../components/admin/CitiesManagementTab';
+import ClientsManagementTab from '../components/admin/ClientsManagementTab';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import {
@@ -780,100 +781,9 @@ const AdminDashboardPage = () => {
         {/* TAB 3: CLIENTS CRM */}
         {/* ============================================================== */}
         {activeTab === 'clients' && (
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-base font-black text-[#2B151F]">
-                  إدارة بيانات العميلات بالكامل (CRM Database)
-                </h3>
-                <p className="text-xs text-[#8E717D]">
-                  سجل العميلات، الملاحظات الخاصة وتفضيلات الزيوت والروائح، وتصنيفات الـ VIP
-                </p>
-              </div>
-
-              <div className="relative w-full sm:w-72">
-                <FiSearch className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[#8E717D]" />
-                <input
-                  type="text"
-                  placeholder="بحث باسم أو جوال العميلة..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full ps-10 pe-4 py-2.5 rounded-2xl bg-white border border-rose-200 outline-none text-xs font-bold"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {filteredClients.map((client) => (
-                <div
-                  key={client.id}
-                  className="bg-white rounded-3xl p-6 shadow-sm border border-rose-100 space-y-4"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-black text-[#2B151F]">{client.name}</h4>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-rose-100 text-[#CF3A69]">
-                          {client.tier}
-                        </span>
-                      </div>
-                      <span className="text-xs text-[#8E717D] font-mono" dir="ltr">
-                        {client.phone}
-                      </span>
-                    </div>
-
-                    <div className="text-end">
-                      <span className="text-xs font-black text-[#2B151F] block">
-                        إجمالي الإنفاق: {client.totalSpent} ر.س
-                      </span>
-                      <span className="text-[10px] text-[#8E717D]">
-                        ({client.totalBookings} حجوزات)
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-[#FFF9FA] border border-rose-100/70 text-xs text-[#5A3F4B] space-y-1 font-bold">
-                    <div>📍 العنوان: {client.city} - {client.district} ({client.address})</div>
-                    {client.notes && (
-                      <div className="text-[#CF3A69] pt-1">
-                        📝 ملاحظات الجلسة: {client.notes}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="pt-2 flex items-center justify-between text-xs">
-                    <button
-                      onClick={() => {
-                        const newNote = prompt('أدخلي ملاحظة جديدة للعميلة:', '');
-                        if (newNote) addClientNote(client.id, newNote);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-rose-50 text-[#CF3A69] font-bold hover:bg-rose-100"
-                    >
-                      + إضافة ملاحظة وتفضيلات
-                    </button>
-
-                    <a
-                      href={`https://wa.me/966${client.phone.replace(/^0/, '')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-emerald-600 font-bold flex items-center gap-1 hover:underline"
-                    >
-                      <FaWhatsapp />
-                      <span>محادثة واتساب</span>
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          <ClientsManagementTab />
         )}
 
-        {/* ============================================================== */}
-        {/* TAB 4: STAFF & COMMISSIONS */}
-        {/* ============================================================== */}
-        {/* ============================================================== */}
-        {/* TAB 4: STAFF & COMMISSIONS (جدول بيانات الموظفات المطور) */}
-        {/* ============================================================== */}
         {activeTab === 'staff' && (
           <div className="space-y-6">
             {/* Header with Title and Add Button */}

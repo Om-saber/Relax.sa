@@ -134,6 +134,23 @@ export const adminApi = {
   deleteCity: (id) =>
     apiFetch(`/admin/cities/${id}`, { method: 'DELETE' }),
 
+  // ── Clients (CRM) ───────────────────────────────────────
+  getClients: (params = {}) => {
+    const q = new URLSearchParams();
+    if (params.search) q.set('search', params.search);
+    if (params.tier) q.set('tier', params.tier);
+    const qs = q.toString();
+    return apiFetch(`/admin/clients${qs ? '?' + qs : ''}`);
+  },
+
+  getClient: (id) => apiFetch(`/admin/clients/${id}`),
+
+  addClientNote: (id, note) =>
+    apiFetch(`/admin/clients/${id}/notes`, {
+      method: 'POST',
+      body: JSON.stringify({ note }),
+    }),
+
   // ── Bookings ───────────────────────────────────────────
   getBookings: (params = {}) => {
     const q = new URLSearchParams();
