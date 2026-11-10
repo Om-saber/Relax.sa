@@ -47,6 +47,7 @@ import { FaCrown, FaWhatsapp } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminBookings } from '../hooks/useAdminBookings';
+import { useAdminOverview } from '../hooks/useAdminOverview';
 import { useLanguage } from '../context/LanguageContext';
 import { TIME_SLOTS } from '../data/servicesData';
 
@@ -108,6 +109,23 @@ const AdminDashboardPage = () => {
     }
     return res;
   };
+
+  // ── Overview stats from API (source of truth) ─────────────
+  const { overview, loading: overviewLoading } = useAdminOverview();
+
+  // Derived values with safe fallbacks
+  const displayRevenue = overview?.revenue?.total ?? 0;
+  const displayTodayRevenue = overview?.revenue?.today ?? 0;
+  const displayMonthRevenue = overview?.revenue?.thisMonth ?? 0;
+  const displayActiveBookings = overview?.bookings?.active ?? 0;
+  const displayPendingBookings = overview?.bookings?.pending ?? 0;
+  const displayTotalBookings = overview?.bookings?.total ?? 0;
+  const displayCompletedBookings = overview?.bookings?.completed ?? 0;
+  const displayCancelledBookings = overview?.bookings?.cancelled ?? 0;
+  const displayStaffAvailable = overview?.staff?.available ?? 0;
+  const displayStaffTotal = overview?.staff?.total ?? 0;
+  const displayCommissions = overview?.commissions?.totalPaid ?? 0;
+  const displayClientsTotal = overview?.clients?.total ?? 0;
 
   const { lang, isRTL } = useLanguage();
   const location = useLocation();
@@ -534,7 +552,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-emerald-700">
-                  {totalRevenue.toLocaleString()} ر.س
+                  {displayRevenue.toLocaleString()} ر.س
                 </div>
                 <span className="text-[10px] text-emerald-600 font-bold block mt-1">
                   +18% نمو المبيعات
@@ -548,9 +566,9 @@ const AdminDashboardPage = () => {
                     <FiCalendar />
                   </div>
                 </div>
-                <div className="text-2xl font-black text-blue-700">{activeCount}</div>
+                <div className="text-2xl font-black text-blue-700">{displayActiveBookings}</div>
                 <span className="text-[10px] text-blue-600 font-bold block mt-1">
-                  {pendingCount} حجز قيد التأكيد الفوري
+                  {displayPendingBookings} حجز قيد التأكيد الفوري
                 </span>
               </div>
 
@@ -562,7 +580,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-purple-700">
-                  {staffList.filter((s) => s.status === 'available').length} / {staffList.length}
+                  {displayStaffAvailable} / {displayStaffTotal}
                 </div>
                 <span className="text-[10px] text-purple-600 font-bold block mt-1">
                   متاحة للزيارات المنزلية
@@ -577,7 +595,7 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
                 <div className="text-2xl font-black text-amber-700">
-                  {totalCommissionsPaid.toFixed(0)} ر.س
+                  {displayCommissions.toFixed(0)} ر.س
                 </div>
                 <span className="text-[10px] text-amber-600 font-bold block mt-1">
                   مستحقات الجلسات المنجزة

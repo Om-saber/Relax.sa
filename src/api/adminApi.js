@@ -82,6 +82,9 @@ export const adminApi = {
       body: JSON.stringify({ permissions }),
     }),
 
+  // ── Overview ───────────────────────────────────────────
+  getOverview: () => apiFetch('/admin/overview'),
+
   // ── Bookings ───────────────────────────────────────────
   getBookings: (params = {}) => {
     const q = new URLSearchParams();
