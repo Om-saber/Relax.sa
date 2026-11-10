@@ -47,7 +47,7 @@ const LoginPage = () => {
     }
 
     try {
-      const res = await requestOtp(phoneNumber);
+      const res = await requestOtp(phoneNumber, clientName);
       if (!res.success) {
         setErrorMsg(res.message || (lang === 'ar' ? 'فشل إرسال الرمز' : 'Failed to send code'));
         setIsSubmitting(false);

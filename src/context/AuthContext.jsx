@@ -19,14 +19,14 @@ const normalizeRole = (backendRole) => {
   return r.toLowerCase();
 };
 
-export const requestOtp = async (phoneNumber) => {
+export const requestOtp = async (phoneNumber, name = '') => {
   try {
     const cleaned = phoneNumber.replace(/\D/g, '');
     if (cleaned.length < 9) throw new Error('رقم جوال غير صحيح');
     const res = await fetch(`${API_BASE}/auth/otp/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: cleaned }),
+      body: JSON.stringify({ phone: cleaned, ...(name ? { name: name.trim() } : {}) }),
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.message || 'فشل إرسال الرمز');
@@ -42,13 +42,13 @@ export const requestOtp = async (phoneNumber) => {
   }
 };
 
-export const verifyOtp = async (phoneNumber, code) => {
+export const verifyOtp = async (phoneNumber, code, name = '') => {
   try {
     const cleaned = phoneNumber.replace(/\D/g, '');
     const res = await fetch(`${API_BASE}/auth/otp/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phone: cleaned, code }),
+      body: JSON.stringify({ phone: cleaned, code, ...(name ? { name: name.trim() } : {}) }),
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.message || 'رمز التحقق غير صحيح');
@@ -196,7 +196,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       if (otpCode && otpCode.length === 4) {
-        const result = await verifyOtp(phoneNumber, otpCode);
+        const result = await verifyOtp(phoneNumber, otpCode, name);
         if (result.success) {
           setUser(result.user);
           if (result.accessToken) localStorage.setItem('letsrelax_access_token', result.accessToken);
@@ -205,7 +205,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return result;
       }
-      const result = await requestOtp(phoneNumber);
+      const result = await requestOtp(phoneNumber, name);
       setLoading(false);
       return result;
     } catch (err) {
