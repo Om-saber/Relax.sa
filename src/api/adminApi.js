@@ -152,6 +152,18 @@ export const adminApi = {
     }),
 
   // ── Booking Assignment ─────────────────────────────────
+  // ── Tickets (CRM) ───────────────────────────────────────
+  getTickets: () => apiFetch('/admin/tickets'),
+
+  createTicket: (data) =>
+    apiFetch('/admin/tickets', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateTicketStatus: (id, status, resolutionNotes) =>
+    apiFetch(`/admin/tickets/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, resolutionNotes }),
+    }),
+
   // ── CMS ─────────────────────────────────────────────────
   getCmsSettings: () => apiFetch('/admin/settings/cms'),
   updateCmsSettings: (patch) => apiFetch('/admin/settings/cms', { method: 'PATCH', body: JSON.stringify(patch) }),

@@ -10,6 +10,7 @@ import { useAdminStaff } from '../hooks/useAdminStaff';
 import { useAdminRoles } from '../hooks/useAdminRoles';
 import { useAdminBlackouts } from '../hooks/useAdminBlackouts';
 import { useCmsSettings } from '../hooks/useCmsSettings';
+import { useAdminTickets } from '../hooks/useAdminTickets';
 import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
@@ -67,7 +68,6 @@ const AdminDashboardPage = () => {
   const {
     staffList,
     clients,
-    complaints,
     cityConfigs,
     servicesList,
     blackouts,
@@ -90,8 +90,6 @@ const AdminDashboardPage = () => {
     toggleStaffVacation,
     updateClient,
     addClientNote,
-    addComplaint,
-    updateComplaintStatus,
     updateCity,
     updateServicePrice,
     addBlackoutDate,
@@ -137,6 +135,12 @@ const AdminDashboardPage = () => {
   } = useAdminCities();
 
   const { cms: apiCms, update: apiUpdateCms } = useCmsSettings();
+
+  const {
+    tickets: apiTickets,
+    createTicket: apiCreateTicket,
+    updateStatus: apiUpdateTicketStatus,
+  } = useAdminTickets();
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
   const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
@@ -314,11 +318,19 @@ const AdminDashboardPage = () => {
   };
 
   // Add new ticket
-  const handleAddTicketSubmit = (e) => {
+  const handleAddTicketSubmit = async (e) => {
     e.preventDefault();
     if (!ticketForm.customerName || !ticketForm.subject) return;
 
-    addComplaint(ticketForm);
+    const payload = {
+      ...ticketForm,
+      priority: (ticketForm.priority || 'MEDIUM').toUpperCase(),
+    };
+    const res = await apiCreateTicket(payload);
+    if (!res?.success) {
+      alert(res?.error || 'فشل تسجيل الشكوى');
+      return;
+    }
     setTicketForm({
       customerName: '',
       customerPhone: '',
@@ -418,7 +430,7 @@ const AdminDashboardPage = () => {
     { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage, requiredPermission: 'manageServices' },
     { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent' },
     { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2, requiredPermission: 'viewReports' },
-    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: complaints.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints' },
+    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: apiTickets.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints' },
   ];
 
   // Filter menu items by user's permissions
@@ -1619,7 +1631,7 @@ const AdminDashboardPage = () => {
             </div>
 
             <div className="space-y-4">
-              {complaints.map((ticket) => (
+              {(apiTickets || []).map((ticket) => (
                 <div
                   key={ticket.id}
                   className="bg-white rounded-3xl p-6 shadow-sm border border-rose-100 space-y-3"
@@ -1678,7 +1690,7 @@ const AdminDashboardPage = () => {
                             'تم التواصل والاعتذار وإضافة كود خصم 20% للجلسة القادمة'
                           );
                           if (solution) {
-                            updateComplaintStatus(ticket.id, 'resolved', solution);
+                            apiUpdateTicketStatus(ticket.id, 'resolved', solution);
                           }
                         }}
                         className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
@@ -2152,6 +2164,20 @@ const AdminDashboardPage = () => {
                   onChange={(e) => setTicketForm({ ...ticketForm, subject: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold"
                 />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#2B151F] block mb-1">الأولوية</label>
+                <select
+                  value={ticketForm.priority || 'medium'}
+                  onChange={(e) => setTicketForm({ ...ticketForm, priority: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
+                >
+                  <option value="low">عادية (Low)</option>
+                  <option value="medium">متوسطة (Medium)</option>
+                  <option value="high">عالية (High)</option>
+                  <option value="urgent">عاجلة (Urgent)</option>
+                </select>
               </div>
 
               <div>
