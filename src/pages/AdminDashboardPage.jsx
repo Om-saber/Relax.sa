@@ -12,6 +12,7 @@ import { useAdminBlackouts } from '../hooks/useAdminBlackouts';
 import { useCmsSettings } from '../hooks/useCmsSettings';
 import { useAdminTickets } from '../hooks/useAdminTickets';
 import { useAdminReports } from '../hooks/useAdminReports';
+import { analyzePermissionChange, ROLE_STANDARDS, SENSITIVE_PERMISSIONS } from '../data/roleStandards';
 import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
@@ -121,6 +122,72 @@ const AdminDashboardPage = () => {
   // Alias للأسماء القديمة المستخدمة في JSX
   const roles = apiRoles;
   const togglePermission = apiTogglePermission;
+
+  // ── Permission change warning system ────────────────────
+  const [permissionWarning, setPermissionWarning] = useState(null);
+  // { role, permissionKey, willBeActive, warning }
+
+  const handleTogglePermission = (role, permissionKey, willBeActive) => {
+    const currentPermsCount = Object.values(role.permissions || {}).filter(Boolean).length;
+    const warning = analyzePermissionChange(role, permissionKey, willBeActive, currentPermsCount);
+
+    if (warning) {
+      // Show modal
+      setPermissionWarning({
+        role,
+        permissionKey,
+        willBeActive,
+        warning,
+      });
+    } else {
+      // Apply directly
+      togglePermission(role.id, permissionKey);
+    }
+  };
+
+  const confirmPermissionChange = () => {
+    if (!permissionWarning) return;
+    togglePermission(permissionWarning.role.id, permissionWarning.permissionKey);
+    setPermissionWarning(null);
+  };
+
+  // ── لون التوجل حسب نوع الصلاحية ─────────────────────────
+  const getToggleStyle = (role, permKey, hasPerm) => {
+    if (!hasPerm) {
+      return {
+        bg: 'bg-gray-300',
+        label: 'غير مفعّلة',
+        tooltip: 'الصلاحية غير مفعّلة لهذا الدور',
+      };
+    }
+    const standard = ROLE_STANDARDS[role?.key]?.permissions || [];
+    const isStandard = standard.includes(permKey);
+    const isSensitive = SENSITIVE_PERMISSIONS.includes(permKey);
+
+    if (isSensitive && !isStandard) {
+      return {
+        bg: 'bg-red-600',
+        label: 'حساسة',
+        tooltip: 'صلاحية حساسة/خطرة — عادةً تُعطى للإدارة فقط',
+      };
+    }
+    if (isStandard) {
+      return {
+        bg: 'bg-emerald-500',
+        label: 'أساسية',
+        tooltip: 'صلاحية أساسية للدور — من المعتاد تفعيلها',
+      };
+    }
+    return {
+      bg: 'bg-amber-500',
+      label: 'إضافية',
+      tooltip: 'صلاحية إضافية غير معتادة لهذا الدور',
+    };
+  };
+
+  const cancelPermissionChange = () => {
+    setPermissionWarning(null);
+  };
 
   // ── Capacity (blackouts + cities) from API ──────────────
   const {
@@ -422,7 +489,7 @@ const AdminDashboardPage = () => {
 
   // Sidebar Menu Items
   const menuItems = [
-    { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid },
+    { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid, requiredPermission: 'viewBookings' },
     { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
     { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length, requiredPermission: 'manageClients' },
     { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
@@ -811,6 +878,34 @@ const AdminDashboardPage = () => {
               </p>
             </div>
 
+            {/* ═════════ Legend: ألوان الصلاحيات ═════════ */}
+            <div className="bg-white rounded-2xl p-4 border border-rose-100 shadow-sm">
+              <p className="text-xs font-black text-[#2B151F] mb-2">
+                📊 دليل الألوان — إيه معنى لون كل صلاحية؟
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-4 rounded-full bg-emerald-500 shrink-0" />
+                  <span className="font-bold text-[#5A3F4B]">🟢 أساسية للدور</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-4 rounded-full bg-amber-500 shrink-0" />
+                  <span className="font-bold text-[#5A3F4B]">🟡 إضافية غير معتادة</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-4 rounded-full bg-red-600 shrink-0" />
+                  <span className="font-bold text-[#5A3F4B]">🔴 حساسة/خطرة</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-4 rounded-full bg-gray-300 shrink-0" />
+                  <span className="font-bold text-[#5A3F4B]">⚪ غير مفعّلة</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-[#8E717D] mt-2">
+                💡 مرّري الماوس على أي Toggle لرؤية تفاصيل الصلاحية
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               {roles.map((role) => (
                 <div
@@ -857,10 +952,9 @@ const AdminDashboardPage = () => {
                         </span>
 
                         <button
-                          onClick={() => togglePermission(role.id, permKey)}
-                          className={`w-9 h-5 rounded-full transition-colors relative ${
-                            hasPerm ? 'bg-[#CF3A69]' : 'bg-gray-300'
-                          }`}
+                          onClick={() => handleTogglePermission(role, permKey, !hasPerm)}
+                          className={`w-9 h-5 rounded-full transition-colors relative ${getToggleStyle(role, permKey, hasPerm).bg}`}
+                          title={getToggleStyle(role, permKey, hasPerm).tooltip}
                         >
                           <span
                             className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${
@@ -2283,6 +2377,103 @@ const AdminDashboardPage = () => {
 
         {activeTab === 'roles-permissions' && (
           <RolesPermissionsTab />
+        )}
+
+        {/* ═════════ PERMISSION CHANGE WARNING MODAL ═════════ */}
+        {permissionWarning && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={cancelPermissionChange}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className={`relative bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl z-10 space-y-4 border-2 ${
+                permissionWarning.warning.level === 'critical'
+                  ? 'border-rose-400'
+                  : 'border-amber-400'
+              }`}
+            >
+              {/* Icon + Title */}
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${
+                    permissionWarning.warning.level === 'critical'
+                      ? 'bg-rose-100 text-rose-600'
+                      : 'bg-amber-100 text-amber-600'
+                  }`}
+                >
+                  {permissionWarning.warning.level === 'critical' ? '🚨' : '⚠️'}
+                </div>
+                <div className="flex-1">
+                  <h3
+                    className={`text-base font-black ${
+                      permissionWarning.warning.level === 'critical'
+                        ? 'text-rose-700'
+                        : 'text-amber-700'
+                    }`}
+                  >
+                    {permissionWarning.warning.title}
+                  </h3>
+                  <p className="text-[11px] text-[#8E717D] mt-0.5">
+                    الدور: <strong>{permissionWarning.role.name}</strong> • الصلاحية:{' '}
+                    <strong>
+                      {permissionWarning.permissionKey === 'viewBookings' && 'عرض الحجوزات'}
+                      {permissionWarning.permissionKey === 'editBookings' && 'تعديل وتأكيد المواعيد'}
+                      {permissionWarning.permissionKey === 'cancelBookings' && 'إلغاء الحجوزات'}
+                      {permissionWarning.permissionKey === 'manageStaff' && 'إدارة الموظفات'}
+                      {permissionWarning.permissionKey === 'manageClients' && 'إدارة بيانات العملاء'}
+                      {permissionWarning.permissionKey === 'manageServices' && 'تسعير الخدمات'}
+                      {permissionWarning.permissionKey === 'manageCities' && 'إدارة الفروع والمدن'}
+                      {permissionWarning.permissionKey === 'viewReports' && 'التقارير'}
+                      {permissionWarning.permissionKey === 'manageRoles' && 'تعديل الأدوار'}
+                      {permissionWarning.permissionKey === 'manageComplaints' && 'خدمة العملاء والشكاوى'}
+                      {permissionWarning.permissionKey === 'manageFinance' && 'المحاسبة والعمولات'}
+                      {permissionWarning.permissionKey === 'manageContent' && 'إدارة المحتوى'}
+                    </strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Message */}
+              <div
+                className={`p-4 rounded-2xl text-xs leading-relaxed font-bold ${
+                  permissionWarning.warning.level === 'critical'
+                    ? 'bg-rose-50 text-rose-900 border border-rose-200'
+                    : 'bg-amber-50 text-amber-900 border border-amber-200'
+                }`}
+              >
+                {permissionWarning.warning.message}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={cancelPermissionChange}
+                  className="flex-1 py-3 rounded-2xl bg-gray-100 hover:bg-gray-200 text-sm font-bold text-[#2B151F]"
+                >
+                  إلغاء — لا تغيّر
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPermissionChange}
+                  className={`flex-1 py-3 rounded-2xl text-sm font-black text-white shadow-md ${
+                    permissionWarning.warning.level === 'critical'
+                      ? 'bg-rose-600 hover:bg-rose-700'
+                      : 'bg-amber-600 hover:bg-amber-700'
+                  }`}
+                >
+                  متأكد — طبّق التغيير
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
