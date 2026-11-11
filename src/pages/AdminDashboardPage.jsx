@@ -320,7 +320,7 @@ const AdminDashboardPage = () => {
   });
 
   // Filtered Staff
-  const filteredStaffList = staffList.filter((st) => {
+  const filteredStaffList = (apiStaffList || []).filter((st) => {
     if (staffCityFilter !== 'all' && st.city !== staffCityFilter) return false;
     if (staffTeamFilter === 'team' && !st.isPartOfTeam) return false;
     if (staffTeamFilter === 'individual' && st.isPartOfTeam) return false;
@@ -339,7 +339,7 @@ const AdminDashboardPage = () => {
     { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid },
     { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
     { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length, requiredPermission: 'manageClients' },
-    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: staffList.length, requiredPermission: 'manageStaff' },
+    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
     { id: 'bookings', label: 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
     { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
     { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
@@ -348,8 +348,6 @@ const AdminDashboardPage = () => {
     { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent' },
     { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2, requiredPermission: 'viewReports' },
     { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: complaints.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints' },
-    { id: 'staff-management', label: 'إدارة الموظفات', icon: FiUserPlus, requiredPermission: 'manageStaff' },
-    { id: 'roles-permissions', label: 'الأدوار والصلاحيات', icon: FiLock, requiredPermission: 'manageRoles' },
   ];
 
   // Filter menu items by user's permissions
@@ -893,7 +891,7 @@ const AdminDashboardPage = () => {
                     ) : (
                       filteredStaffList.map((st) => {
                         const email = st.email || (st.nameEn ? `${st.nameEn.toLowerCase().replace(/[^a-z]/g, '')}@relax.sa` : `${st.name.replace(/\s+/g, '.')}@relax.sa`);
-                        const offDays = st.offDays && st.offDays.length > 0 ? st.offDays : ['الجمعة', 'السبت'];
+                        const offDays = st.offDayLabels && st.offDayLabels.length > 0 ? st.offDayLabels : ['الجمعة', 'السبت'];
 
                         return (
                           <tr key={st.id} className="hover:bg-rose-50/40 transition-colors">
