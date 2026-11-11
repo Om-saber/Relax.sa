@@ -647,20 +647,20 @@ const AdminDashboardPage = () => {
                 <span>الطاقة الاستيعابية وحجوزات الفروع اليوم</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {cityConfigs.filter(c => c.active).map(city => (
-                  <div key={city.id} className="p-4 rounded-2xl bg-[#FFF9FA] border border-rose-100/70">
+                {(overview?.capacity || []).map(city => (
+                  <div key={city.cityKey} className="p-4 rounded-2xl bg-[#FFF9FA] border border-rose-100/70">
                     <div className="flex justify-between text-xs font-black mb-1">
-                      <span>{city.name}</span>
-                      <span className="text-[#CF3A69]">{city.currentBookingsToday} / {city.maxDailyCapacity} حجز</span>
+                      <span>{city.cityName}</span>
+                      <span className="text-[#CF3A69]">{city.bookingsToday} / {city.maxDailyCapacity} حجز</span>
                     </div>
                     <div className="h-2 rounded-full bg-rose-100 overflow-hidden mt-2">
                       <div
                         className="h-full bg-gradient-to-r from-[#CF3A69] to-[#E65A84] rounded-full"
-                        style={{ width: `${Math.min(100, (city.currentBookingsToday / city.maxDailyCapacity) * 100)}%` }}
+                        style={{ width: `${Math.min(100, city.maxDailyCapacity > 0 ? (city.bookingsToday / city.maxDailyCapacity) * 100 : 0)}%` }}
                       />
                     </div>
                     <span className="text-[10px] text-[#8E717D] mt-1.5 block">
-                      ساعات العمل: {city.operatingHours}
+                      ساعات العمل: {city.operatingHours || '—'}
                     </span>
                   </div>
                 ))}
