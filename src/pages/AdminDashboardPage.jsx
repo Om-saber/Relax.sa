@@ -106,7 +106,7 @@ const AdminDashboardPage = () => {
   } = useAdminBookings();
 
   // ── Admin Staff from API (for reassignment) ─────────────
-  const { staff: apiStaffList } = useAdminStaff();
+  const { staff: apiStaffList, refetch: refetchStaff } = useAdminStaff();
 
   // ── Admin Roles & Permissions from API ──────────────────
   const {
@@ -276,10 +276,22 @@ const AdminDashboardPage = () => {
     setNewStaffModal(false);
   };
 
-  const handleSaveOffDays = () => {
-    if (offDaysModal.staffId) {
-      updateStaff(offDaysModal.staffId, { offDays: offDaysModal.offDays });
+  const handleSaveOffDays = async () => {
+    if (!offDaysModal.staffId) return;
+    const AR_TO_NUM = {
+      'الأحد': 0, 'الإثنين': 1, 'الثلاثاء': 2, 'الأربعاء': 3,
+      'الخميس': 4, 'الجمعة': 5, 'السبت': 6,
+    };
+    const weekdays = (offDaysModal.offDays || [])
+      .map((d) => AR_TO_NUM[d])
+      .filter((n) => n !== undefined);
+
+    try {
+      await adminApi.updateStaffOffDays(offDaysModal.staffId, weekdays);
       setOffDaysModal({ isOpen: false, staffId: null, staffName: '', offDays: [] });
+      if (refetchStaff) await refetchStaff();
+    } catch (err) {
+      alert(err.message || 'فشل حفظ أيام الإجازة');
     }
   };
 
@@ -995,7 +1007,7 @@ const AdminDashboardPage = () => {
                                   onClick={() =>
                                     setOffDaysModal({
                                       isOpen: true,
-                                      staffId: st.id,
+                                      staffId: st.staffProfileId || st.id,
                                       staffName: st.name,
                                       offDays: [...offDays],
                                     })

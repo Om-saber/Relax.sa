@@ -152,6 +152,12 @@ export const adminApi = {
     }),
 
   // ── Booking Assignment ─────────────────────────────────
+  updateStaffOffDays: (staffProfileId, weekdays) =>
+    apiFetch(`/admin/staff-profiles/${staffProfileId}/off-days`, {
+      method: 'PATCH',
+      body: JSON.stringify({ weekdays }),
+    }),
+
   assignBooking: (id, specialistId) =>
     apiFetch(`/admin/bookings/${id}/assign`, {
       method: 'PATCH',
