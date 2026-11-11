@@ -11,6 +11,7 @@ import { useAdminRoles } from '../hooks/useAdminRoles';
 import { useAdminBlackouts } from '../hooks/useAdminBlackouts';
 import { useCmsSettings } from '../hooks/useCmsSettings';
 import { useAdminTickets } from '../hooks/useAdminTickets';
+import { useAdminReports } from '../hooks/useAdminReports';
 import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
@@ -135,6 +136,8 @@ const AdminDashboardPage = () => {
   } = useAdminCities();
 
   const { cms: apiCms, update: apiUpdateCms } = useCmsSettings();
+
+  const { reports: apiReports } = useAdminReports();
 
   const {
     tickets: apiTickets,
@@ -1528,25 +1531,25 @@ const AdminDashboardPage = () => {
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <span className="text-xs text-[#8E717D] font-bold block">صافي المبيعات</span>
                 <span className="text-2xl font-black text-[#2B151F]">
-                  {totalRevenue.toLocaleString()} ر.س
+                  {(apiReports?.kpis?.totalRevenue || 0).toLocaleString()} ر.س
                 </span>
               </div>
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <span className="text-xs text-[#8E717D] font-bold block">إجمالي العمولات المستحقة</span>
                 <span className="text-2xl font-black text-emerald-700">
-                  {totalCommissionsPaid.toFixed(0)} ر.س
+                  {(apiReports?.kpis?.totalCommissions || 0).toFixed(0)} ر.س
                 </span>
               </div>
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <span className="text-xs text-[#8E717D] font-bold block">معدل الإتمام الناجح</span>
                 <span className="text-2xl font-black text-purple-700">
-                  {bookings.length > 0 ? Math.round((completedCount / bookings.length) * 100) : 100}%
+                  {apiReports?.kpis?.completionRate || 0}%
                 </span>
               </div>
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <span className="text-xs text-[#8E717D] font-bold block">نسبة الإلغاء</span>
                 <span className="text-2xl font-black text-rose-600">
-                  {bookings.length > 0 ? Math.round((cancelledCount / bookings.length) * 100) : 0}%
+                  {apiReports?.kpis?.cancellationRate || 0}%
                 </span>
               </div>
             </div>
@@ -1555,51 +1558,39 @@ const AdminDashboardPage = () => {
               <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm space-y-4">
                 <h4 className="text-sm font-black text-[#2B151F]">توزيع المبيعات حسب المدن</h4>
                 <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold mb-1">
-                      <span>الرياض</span>
-                      <span>72%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-rose-100 overflow-hidden">
-                      <div className="h-full bg-[#CF3A69] rounded-full" style={{ width: '72%' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs font-bold mb-1">
-                      <span>الخبر</span>
-                      <span>18%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-rose-100 overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{ width: '18%' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs font-bold mb-1">
-                      <span>الدمام</span>
-                      <span>10%</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-rose-100 overflow-hidden">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '10%' }} />
-                    </div>
-                  </div>
+                  {(apiReports?.salesByCity || []).map((city, idx) => {
+                    const colors = ['bg-[#CF3A69]', 'bg-purple-500', 'bg-blue-500', 'bg-emerald-500', 'bg-amber-500'];
+                    const colorClass = colors[idx % colors.length];
+                    return (
+                      <div key={city.cityId || idx}>
+                        <div className="flex justify-between text-xs font-bold mb-1">
+                          <span>{city.cityName}</span>
+                          <span>{city.percentage}%</span>
+                        </div>
+                        <div className="h-2 rounded-full bg-rose-100 overflow-hidden">
+                          <div className={`h-full ${colorClass} rounded-full`} style={{ width: `${city.percentage}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {(apiReports?.salesByCity || []).length === 0 && (
+                    <p className="text-xs text-[#8E717D] text-center py-2">لا توجد بيانات</p>
+                  )}
                 </div>
               </div>
 
               <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm space-y-4">
                 <h4 className="text-sm font-black text-[#2B151F]">الخدمات الأكثر طلباً</h4>
                 <div className="space-y-2.5 text-xs font-bold">
-                  <div className="flex justify-between p-2 rounded-xl bg-[#FFF9FA]">
-                    <span>1. باقة الهدوء - Calm Package</span>
-                    <span className="text-[#CF3A69]">42 حجز</span>
-                  </div>
-                  <div className="flex justify-between p-2 rounded-xl bg-[#FFF9FA]">
-                    <span>2. الحمام المغربي الملكي الفاخر</span>
-                    <span className="text-[#CF3A69]">31 حجز</span>
-                  </div>
-                  <div className="flex justify-between p-2 rounded-xl bg-[#FFF9FA]">
-                    <span>3. باقة الجمال - Beauty Package</span>
-                    <span className="text-[#CF3A69]">25 حجز</span>
-                  </div>
+                  {(apiReports?.topServices || []).map((svc, idx) => (
+                    <div key={svc.serviceId || idx} className="flex justify-between p-2 rounded-xl bg-[#FFF9FA]">
+                      <span>{idx + 1}. {svc.titleAr}</span>
+                      <span className="text-[#CF3A69]">{svc.count} حجز</span>
+                    </div>
+                  ))}
+                  {(apiReports?.topServices || []).length === 0 && (
+                    <p className="text-xs text-[#8E717D] text-center py-2">لا توجد بيانات</p>
+                  )}
                 </div>
               </div>
             </div>

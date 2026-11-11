@@ -164,6 +164,9 @@ export const adminApi = {
       body: JSON.stringify({ status, resolutionNotes }),
     }),
 
+  // ── Reports ─────────────────────────────────────────────
+  getReportsOverview: () => apiFetch('/admin/reports/overview'),
+
   // ── CMS ─────────────────────────────────────────────────
   getCmsSettings: () => apiFetch('/admin/settings/cms'),
   updateCmsSettings: (patch) => apiFetch('/admin/settings/cms', { method: 'PATCH', body: JSON.stringify(patch) }),
