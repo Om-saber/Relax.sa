@@ -7,6 +7,7 @@ import ServicesManagementTab from '../components/admin/ServicesManagementTab';
 import CitiesManagementTab from '../components/admin/CitiesManagementTab';
 import ClientsManagementTab from '../components/admin/ClientsManagementTab';
 import { useAdminStaff } from '../hooks/useAdminStaff';
+import { useAdminRoles } from '../hooks/useAdminRoles';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
@@ -64,7 +65,6 @@ const AdminDashboardPage = () => {
     staffList,
     clients,
     complaints,
-    roles,
     cityConfigs,
     servicesList,
     blackouts,
@@ -91,7 +91,6 @@ const AdminDashboardPage = () => {
     updateComplaintStatus,
     updateCity,
     updateServicePrice,
-    togglePermission,
     addBlackoutDate,
     removeBlackoutDate,
     updateCmsContent,
@@ -108,6 +107,18 @@ const AdminDashboardPage = () => {
 
   // ── Admin Staff from API (for reassignment) ─────────────
   const { staff: apiStaffList } = useAdminStaff();
+
+  // ── Admin Roles & Permissions from API ──────────────────
+  const {
+    roles: apiRoles,
+    permissions: apiPermissions,
+    loading: adminRolesLoading,
+    togglePermission: apiTogglePermission,
+  } = useAdminRoles();
+
+  // Alias للأسماء القديمة المستخدمة في JSX
+  const roles = apiRoles;
+  const togglePermission = apiTogglePermission;
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
   const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
