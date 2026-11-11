@@ -8,6 +8,8 @@ import CitiesManagementTab from '../components/admin/CitiesManagementTab';
 import ClientsManagementTab from '../components/admin/ClientsManagementTab';
 import { useAdminStaff } from '../hooks/useAdminStaff';
 import { useAdminRoles } from '../hooks/useAdminRoles';
+import { useAdminBlackouts } from '../hooks/useAdminBlackouts';
+import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
@@ -119,6 +121,19 @@ const AdminDashboardPage = () => {
   // Alias للأسماء القديمة المستخدمة في JSX
   const roles = apiRoles;
   const togglePermission = apiTogglePermission;
+
+  // ── Capacity (blackouts + cities) from API ──────────────
+  const {
+    blackouts: apiBlackouts,
+    createBlackout: apiCreateBlackout,
+    deleteBlackout: apiDeleteBlackout,
+    loading: blackoutsLoading,
+  } = useAdminBlackouts();
+
+  const {
+    cities: apiCities,
+    updateCity: apiUpdateCity,
+  } = useAdminCities();
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
   const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
@@ -313,15 +328,45 @@ const AdminDashboardPage = () => {
   };
 
   // Add blackout date
-  const handleAddBlackoutSubmit = (e) => {
+  const handleAddBlackoutSubmit = async (e) => {
     e.preventDefault();
     if (!blackoutForm.title || !blackoutForm.date) return;
-    addBlackoutDate({ ...blackoutForm, active: true });
-    setBlackoutForm({ title: '', date: '', city: 'الكل' });
-    setNewBlackoutModal(false);
+
+    let cityId = null;
+    if (blackoutForm.city && blackoutForm.city !== 'الكل') {
+      const matched = (apiCities || []).find(
+        (c) => c.nameAr === blackoutForm.city || c.name === blackoutForm.city,
+      );
+      cityId = matched?.id || null;
+    }
+
+    const payload = {
+      title: blackoutForm.title.trim(),
+      date: blackoutForm.date,
+      ...(cityId ? { cityId } : {}),
+    };
+
+    const res = await apiCreateBlackout(payload);
+    if (res?.success) {
+      setBlackoutForm({ title: '', date: '', city: 'الكل' });
+      setNewBlackoutModal(false);
+    } else {
+      alert(res?.error || 'فشل إضافة التاريخ المغلق');
+    }
   };
 
   // Filtered Bookings
+  const parseStartTime = (str) => {
+    if (!str) return '10:00';
+    const match = str.match(/(\d{1,2}:\d{2})/);
+    return match ? match[1].padStart(5, '0') : '10:00';
+  };
+  const parseEndTime = (str) => {
+    if (!str) return '23:00';
+    const matches = str.match(/(\d{1,2}:\d{2})/g);
+    return matches && matches.length > 1 ? matches[1].padStart(5, '0') : '23:00';
+  };
+
   const filteredBookings = bookings.filter((b) => {
     if (bookingFilterCity !== 'all' && b.city !== bookingFilterCity) return false;
     if (bookingFilterStatus !== 'all' && b.status !== bookingFilterStatus) return false;
@@ -1287,10 +1332,10 @@ const AdminDashboardPage = () => {
 
             {/* Operating Hours & Caps Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {cityConfigs.map((city) => (
+              {(apiCities || []).map((city) => (
                 <div key={city.id} className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm space-y-3">
                   <div className="flex justify-between items-center">
-                    <h4 className="text-sm font-black text-[#2B151F]">{city.name}</h4>
+                    <h4 className="text-sm font-black text-[#2B151F]">{city.nameAr}</h4>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
                       مفعل
                     </span>
@@ -1299,19 +1344,28 @@ const AdminDashboardPage = () => {
                   <div className="space-y-2 text-xs font-bold text-[#5A3F4B]">
                     <div>
                       <label className="text-[11px] text-[#8E717D] block mb-1">ساعات العمل:</label>
-                      <input
-                        type="text"
-                        defaultValue={city.operatingHours}
-                        onBlur={(e) => updateCity(city.id, { operatingHours: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl bg-[#FFF9FA] border border-rose-200 outline-none"
-                      />
+                      <div className="flex items-center gap-2" dir="ltr">
+                        <input
+                          type="time"
+                          value={parseStartTime(city.operatingHours)}
+                          onChange={(e) => apiUpdateCity(city.id, { operatingHours: `${e.target.value} - ${parseEndTime(city.operatingHours)}` })}
+                          className="w-full px-2 py-2 rounded-xl bg-[#FFF9FA] border border-rose-200 outline-none text-xs font-bold text-center"
+                        />
+                        <span className="text-xs text-[#8E717D] font-bold">-</span>
+                        <input
+                          type="time"
+                          value={parseEndTime(city.operatingHours)}
+                          onChange={(e) => apiUpdateCity(city.id, { operatingHours: `${parseStartTime(city.operatingHours)} - ${e.target.value}` })}
+                          className="w-full px-2 py-2 rounded-xl bg-[#FFF9FA] border border-rose-200 outline-none text-xs font-bold text-center"
+                        />
+                      </div>
                     </div>
                     <div>
                       <label className="text-[11px] text-[#8E717D] block mb-1">الحد الأقصى للحجوزات اليومية:</label>
                       <input
                         type="number"
                         defaultValue={city.maxDailyCapacity}
-                        onBlur={(e) => updateCity(city.id, { maxDailyCapacity: Number(e.target.value) })}
+                        onBlur={(e) => apiUpdateCity(city.id, { maxDailyCapacity: Number(e.target.value) })}
                         className="w-full px-3 py-2 rounded-xl bg-[#FFF9FA] border border-rose-200 outline-none"
                       />
                     </div>
@@ -1326,7 +1380,7 @@ const AdminDashboardPage = () => {
                 قائمة التواريخ والأيام المغلقة للحجوزات (Blackout Dates)
               </h4>
               <div className="space-y-2">
-                {blackouts.map((blk) => (
+                {(apiBlackouts || []).map((blk) => (
                   <div
                     key={blk.id}
                     className="flex items-center justify-between p-3 rounded-2xl bg-[#FFF9FA] border border-rose-100 text-xs font-bold"
@@ -1334,12 +1388,12 @@ const AdminDashboardPage = () => {
                     <div>
                       <span className="text-[#2B151F] block">{blk.title}</span>
                       <span className="text-[10px] text-[#8E717D]">
-                        التاريخ: {blk.date} • الفرع المشمول: {blk.city}
+                        التاريخ: {String(blk.date).slice(0, 10)} • الفرع: {blk.city?.nameAr || 'كل المدن'}
                       </span>
                     </div>
 
                     <button
-                      onClick={() => removeBlackoutDate(blk.id)}
+                      onClick={() => apiDeleteBlackout(blk.id)}
                       className="text-rose-500 hover:text-rose-700"
                       title="حذف"
                     >
@@ -2168,9 +2222,9 @@ const AdminDashboardPage = () => {
                   className="w-full px-3 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold"
                 >
                   <option value="الكل">كل الفروع</option>
-                  <option value="الرياض">الرياض</option>
-                  <option value="الخبر">الخبر</option>
-                  <option value="الدمام">الدمام</option>
+                  {(apiCities || []).map((city) => (
+                    <option key={city.id} value={city.nameAr}>{city.nameAr}</option>
+                  ))}
                 </select>
               </div>
 

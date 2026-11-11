@@ -152,6 +152,18 @@ export const adminApi = {
     }),
 
   // ── Booking Assignment ─────────────────────────────────
+  // ── Blackouts (Capacity) ────────────────────────────────
+  getBlackouts: () => apiFetch('/admin/blackouts'),
+
+  createBlackout: (data) =>
+    apiFetch('/admin/blackouts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  deleteBlackout: (id) =>
+    apiFetch(`/admin/blackouts/${id}`, { method: 'DELETE' }),
+
   // ── Settings ────────────────────────────────────────────
   getBookingSettings: () => apiFetch('/admin/settings/booking'),
 
