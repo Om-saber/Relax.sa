@@ -151,6 +151,13 @@ export const adminApi = {
       body: JSON.stringify({ note }),
     }),
 
+  // ── Booking Assignment ─────────────────────────────────
+  assignBooking: (id, specialistId) =>
+    apiFetch(`/admin/bookings/${id}/assign`, {
+      method: 'PATCH',
+      body: JSON.stringify({ specialistId }),
+    }),
+
   // ── Bookings ───────────────────────────────────────────
   getBookings: (params = {}) => {
     const q = new URLSearchParams();

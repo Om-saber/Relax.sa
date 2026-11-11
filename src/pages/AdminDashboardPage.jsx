@@ -6,6 +6,8 @@ import StaffManagementTab from '../components/admin/StaffManagementTab';
 import ServicesManagementTab from '../components/admin/ServicesManagementTab';
 import CitiesManagementTab from '../components/admin/CitiesManagementTab';
 import ClientsManagementTab from '../components/admin/ClientsManagementTab';
+import { useAdminStaff } from '../hooks/useAdminStaff';
+import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import {
@@ -101,7 +103,11 @@ const AdminDashboardPage = () => {
     updateStatus: apiUpdateBookingStatus,
     loading: adminBookingsLoading,
     error: adminBookingsError,
+    refetch: refetchBookings,
   } = useAdminBookings();
+
+  // ── Admin Staff from API (for reassignment) ─────────────
+  const { staff: apiStaffList } = useAdminStaff();
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
   const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
@@ -204,16 +210,26 @@ const AdminDashboardPage = () => {
   const [newBlackoutModal, setNewBlackoutModal] = useState(false);
   const [blackoutForm, setBlackoutForm] = useState({ title: '', date: '', city: 'الكل' });
 
-  // Reassignment with Double-Booking check
-  const handleConfirmReassign = () => {
+  // Reassignment with Double-Booking check (API-backed)
+  const handleConfirmReassign = async () => {
     if (!reassignModal.booking || !reassignModal.staffId) return;
 
-    const res = reassignSpecialist(reassignModal.booking.id, reassignModal.staffId);
-    if (!res.success) {
-      setConflictAlert(res.error);
-    } else {
-      setReassignModal({ isOpen: false, booking: null, staffId: '' });
-      alert('تم تعيين الأخصائية بنجاح وبدون أي تعارض في الجداول! ✅');
+    try {
+      const res = await adminApi.assignBooking(
+        reassignModal.booking.id,
+        reassignModal.staffId,
+      );
+      if (res) {
+        setReassignModal({ isOpen: false, booking: null, staffId: '' });
+        if (refetchBookings) await refetchBookings();
+        alert('تم تعيين الأخصائية بنجاح وبدون أي تعارض في الجداول! ✅');
+      }
+    } catch (err) {
+      const msg =
+        err?.code === 'DOUBLE_BOOKING' || /DOUBLE_BOOKING|محجوزة/.test(err?.message || '')
+          ? '⚠️ تعارض: هذه الأخصائية محجوزة في نفس الموعد. اختاري أخصائية بديلة أو توقيتاً آخر.'
+          : err?.message || 'فشل التعيين. حاولي مرة أخرى.';
+      setConflictAlert(msg);
     }
   };
 
@@ -1628,36 +1644,48 @@ const AdminDashboardPage = () => {
                   اختاري الأخصائية المتاحة:
                 </label>
                 <div className="space-y-2">
-                  {staffList.map((st) => (
-                    <label
-                      key={st.id}
-                      className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
-                        reassignModal.staffId === st.id
-                          ? 'border-[#CF3A69] bg-rose-50/60'
-                          : 'border-rose-100 hover:bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="staff"
-                          value={st.id}
-                          checked={reassignModal.staffId === st.id}
-                          onChange={(e) =>
-                            setReassignModal((prev) => ({ ...prev, staffId: e.target.value }))
-                          }
-                          className="text-[#CF3A69]"
-                        />
-                        <div>
-                          <span className="text-xs font-black text-[#2B151F] block">{st.name}</span>
-                          <span className="text-[10px] text-[#8E717D]">{st.city} • {st.role}</span>
+                  {apiStaffList.length === 0 ? (
+                    <p className="text-xs text-rose-500 font-bold p-3 bg-rose-50 rounded-2xl text-center">
+                      لا توجد أخصائيات متاحات حالياً. أضيفي موظفة من تاب "إدارة الموظفات".
+                    </p>
+                  ) : (
+                    apiStaffList.map((st) => (
+                      <label
+                        key={st.staffProfileId}
+                        className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
+                          reassignModal.staffId === st.staffProfileId
+                            ? 'border-[#CF3A69] bg-rose-50/60'
+                            : 'border-rose-100 hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="staff"
+                            value={st.staffProfileId}
+                            checked={reassignModal.staffId === st.staffProfileId}
+                            onChange={(e) =>
+                              setReassignModal((prev) => ({ ...prev, staffId: e.target.value }))
+                            }
+                            className="text-[#CF3A69]"
+                          />
+                          <div>
+                            <span className="text-xs font-black text-[#2B151F] block">{st.name}</span>
+                            <span className="text-[10px] text-[#8E717D]">
+                              {st.roleTitle || 'أخصائية'} • {st.staffCode || ''}
+                            </span>
+                          </div>
                         </div>
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-600">
-                        {st.status === 'available' ? 'متاحة' : 'مشغولة'}
-                      </span>
-                    </label>
-                  ))}
+                        <span
+                          className={`text-[10px] font-bold ${
+                            st.status === 'AVAILABLE' ? 'text-emerald-600' : 'text-amber-600'
+                          }`}
+                        >
+                          {st.status === 'AVAILABLE' ? 'متاحة' : 'مشغولة'}
+                        </span>
+                      </label>
+                    ))
+                  )}
                 </div>
               </div>
 

@@ -57,6 +57,8 @@ function adaptAdminBooking(b) {
     paymentStatus: b.paymentStatus ? String(b.paymentStatus).toLowerCase() : 'unpaid',
     status: STATUS_MAP[b.status] || String(b.status).toLowerCase(),
     specialistId: b.specialistId || null,
+    specialistName: b.specialistName || b.specialist?.user?.name || b.specialist?.name || null,
+    specialistPhone: b.specialistPhone || b.specialist?.user?.phone || b.specialist?.phone || null,
     notes: b.notes || '',
     createdAt: b.createdAt,
     cancelledAt: b.cancelledAt,
