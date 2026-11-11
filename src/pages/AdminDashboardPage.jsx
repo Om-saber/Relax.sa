@@ -9,6 +9,7 @@ import ClientsManagementTab from '../components/admin/ClientsManagementTab';
 import { useAdminStaff } from '../hooks/useAdminStaff';
 import { useAdminRoles } from '../hooks/useAdminRoles';
 import { useAdminBlackouts } from '../hooks/useAdminBlackouts';
+import { useCmsSettings } from '../hooks/useCmsSettings';
 import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
@@ -134,6 +135,8 @@ const AdminDashboardPage = () => {
     cities: apiCities,
     updateCity: apiUpdateCity,
   } = useAdminCities();
+
+  const { cms: apiCms, update: apiUpdateCms } = useCmsSettings();
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
   const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
@@ -1435,8 +1438,8 @@ const AdminDashboardPage = () => {
                 </label>
                 <textarea
                   rows={2}
-                  defaultValue={cmsContent.bannerAnnouncement}
-                  onBlur={(e) => updateCmsContent({ bannerAnnouncement: e.target.value })}
+                  key={`banner-${apiCms.bannerAnnouncement}`} defaultValue={apiCms.bannerAnnouncement}
+                  onBlur={(e) => apiUpdateCms({ bannerAnnouncement: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
                 />
               </div>
@@ -1446,8 +1449,8 @@ const AdminDashboardPage = () => {
                   <label className="text-xs font-bold text-[#2B151F] block mb-1">كود الخصم الفعال:</label>
                   <input
                     type="text"
-                    defaultValue={cmsContent.promoCode}
-                    onBlur={(e) => updateCmsContent({ promoCode: e.target.value })}
+                    key={`promo-${apiCms.promoCode}`} defaultValue={apiCms.promoCode}
+                    onBlur={(e) => apiUpdateCms({ promoCode: e.target.value })}
                     className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
                   />
                 </div>
@@ -1455,8 +1458,8 @@ const AdminDashboardPage = () => {
                   <label className="text-xs font-bold text-[#2B151F] block mb-1">نسبة الخصم (%):</label>
                   <input
                     type="number"
-                    defaultValue={cmsContent.promoDiscount}
-                    onBlur={(e) => updateCmsContent({ promoDiscount: Number(e.target.value) })}
+                    key={`discount-${apiCms.promoDiscount}`} defaultValue={apiCms.promoDiscount}
+                    onBlur={(e) => apiUpdateCms({ promoDiscount: Number(e.target.value) })}
                     className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
                   />
                 </div>
@@ -1466,8 +1469,18 @@ const AdminDashboardPage = () => {
                 <label className="text-xs font-bold text-[#2B151F] block mb-1">هاتف خدمة العملاء المباشر:</label>
                 <input
                   type="text"
-                  defaultValue={cmsContent.supportPhone}
-                  onBlur={(e) => updateCmsContent({ supportPhone: e.target.value })}
+                  key={`phone-${apiCms.supportPhone}`} defaultValue={apiCms.supportPhone}
+                  onBlur={(e) => apiUpdateCms({ supportPhone: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#2B151F] block mb-1">نص ساعات العمل (يظهر للعميلات):</label>
+                <input
+                  type="text"
+                  key={`hours-${apiCms.workingHoursText}`} defaultValue={apiCms.workingHoursText}
+                  onBlur={(e) => apiUpdateCms({ workingHoursText: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold outline-none"
                 />
               </div>

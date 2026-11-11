@@ -152,6 +152,10 @@ export const adminApi = {
     }),
 
   // ── Booking Assignment ─────────────────────────────────
+  // ── CMS ─────────────────────────────────────────────────
+  getCmsSettings: () => apiFetch('/admin/settings/cms'),
+  updateCmsSettings: (patch) => apiFetch('/admin/settings/cms', { method: 'PATCH', body: JSON.stringify(patch) }),
+
   // ── Blackouts (Capacity) ────────────────────────────────
   getBlackouts: () => apiFetch('/admin/blackouts'),
 
