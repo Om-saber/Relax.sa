@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiUsers,
@@ -24,6 +24,8 @@ import {
 } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa6';
 import { useAdmin } from '../../context/AdminContext';
+import { useBookingSettings, DEFAULT_BOOKING_SETTINGS } from '../../hooks/useBookingSettings';
+import { useAdminStaff } from '../../hooks/useAdminStaff';
 import { Link } from 'react-router-dom';
 
 /**
@@ -60,13 +62,32 @@ const SwitchToggle = ({ checked, onChange, disabled = false, id }) => {
 };
 
 const BookingSettingsTab = () => {
+  const { staffList: _mockStaff } = useAdmin();
+
   const {
-    bookingSettings,
-    updateBookingSetting,
-    updateBookingSettings,
-    resetBookingSettings,
-    staffList
-  } = useAdmin();
+    settings: apiSettings,
+    update: updateSettings,
+  } = useBookingSettings();
+
+  const { staff: apiStaffList } = useAdminStaff();
+
+  const [draft, setDraft] = useState(apiSettings);
+  useEffect(() => {
+    setDraft(apiSettings);
+  }, [apiSettings]);
+
+  const bookingSettings = draft;
+  const staffList = (apiStaffList && apiStaffList.length > 0)
+    ? apiStaffList
+    : (_mockStaff || []);
+
+  const updateBookingSetting = (key, value) => {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetBookingSettings = () => {
+    setDraft(DEFAULT_BOOKING_SETTINGS);
+  };
 
   // Local state for feedback toasts & modals
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -107,18 +128,22 @@ const BookingSettingsTab = () => {
   };
 
   // Save changes handler
-  const handleSave = () => {
-    localStorage.setItem('letsrelax_booking_settings', JSON.stringify(bookingSettings));
-    setHasUnsavedChanges(false);
-    showToast('تم حفظ جميع خيارات وإعدادات الحجز بنجاح ✅');
+  const handleSave = async () => {
+    const res = await updateSettings(draft);
+    if (res.success) {
+      setHasUnsavedChanges(false);
+      showToast('تم حفظ جميع خيارات وإعدادات الحجز بنجاح ✅');
+    } else {
+      showToast('فشل الحفظ: ' + (res.error || 'خطأ غير معروف'));
+    }
   };
 
   // Reset to defaults
   const handleReset = () => {
     if (window.confirm('هل أنت متأكد من استعادة كافة إعدادات الحجز والرسائل إلى الحالة الافتراضية؟')) {
       resetBookingSettings();
-      setHasUnsavedChanges(false);
-      showToast('تمت استعادة الإعدادات الافتراضية بنجاح 🔄');
+      setHasUnsavedChanges(true);
+      showToast('تمت استعادة القيم الافتراضية — اضغطي حفظ لتأكيدها 🔄');
     }
   };
 

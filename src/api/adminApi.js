@@ -152,6 +152,15 @@ export const adminApi = {
     }),
 
   // ── Booking Assignment ─────────────────────────────────
+  // ── Settings ────────────────────────────────────────────
+  getBookingSettings: () => apiFetch('/admin/settings/booking'),
+
+  updateBookingSettings: (patch) =>
+    apiFetch('/admin/settings/booking', {
+      method: 'PATCH',
+      body: JSON.stringify(patch),
+    }),
+
   updateStaffOffDays: (staffProfileId, weekdays) =>
     apiFetch(`/admin/staff-profiles/${staffProfileId}/off-days`, {
       method: 'PATCH',
