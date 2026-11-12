@@ -134,6 +134,18 @@ export const adminApi = {
   deleteCity: (id) =>
     apiFetch(`/admin/cities/${id}`, { method: 'DELETE' }),
 
+  // ── Branches ────────────────────────────────────────────
+  getBranches: (cityId) =>
+    apiFetch(`/admin/branches${cityId ? `?cityId=${cityId}` : ''}`),
+  createBranch: (data) =>
+    apiFetch('/admin/branches', { method: 'POST', body: JSON.stringify(data) }),
+  updateBranch: (id, data) =>
+    apiFetch(`/admin/branches/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+  toggleBranch: (id) =>
+    apiFetch(`/admin/branches/${id}/toggle`, { method: 'PATCH' }),
+  deleteBranch: (id) =>
+    apiFetch(`/admin/branches/${id}`, { method: 'DELETE' }),
+
   // ── Clients (CRM) ───────────────────────────────────────
   getClients: (params = {}) => {
     const q = new URLSearchParams();

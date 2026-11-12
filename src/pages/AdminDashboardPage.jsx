@@ -5,6 +5,7 @@ import BookingSettingsTab from '../components/admin/BookingSettingsTab';
 import StaffManagementTab from '../components/admin/StaffManagementTab';
 import ServicesManagementTab from '../components/admin/ServicesManagementTab';
 import CitiesManagementTab from '../components/admin/CitiesManagementTab';
+import BranchesManagementTab from '../components/admin/BranchesManagementTab';
 import ClientsManagementTab from '../components/admin/ClientsManagementTab';
 import { useAdminStaff } from '../hooks/useAdminStaff';
 import { useAdminRoles } from '../hooks/useAdminRoles';
@@ -55,6 +56,7 @@ import {
   FiMail,
   FiUserPlus,
   FiLock,
+  FiHome,
 } from 'react-icons/fi';
 import { FaCrown, FaWhatsapp } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
@@ -496,6 +498,7 @@ const AdminDashboardPage = () => {
     { id: 'bookings', label: 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
     { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
     { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
+    { id: 'branches', label: 'إدارة الفروع', icon: FiHome, requiredPermission: 'manageCities' },
     { id: 'cities', label: 'المدن، الفروع ورسوم التنقل', icon: FiMapPin, requiredPermission: 'manageCities' },
     { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage, requiredPermission: 'manageServices' },
     { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent' },
@@ -1521,6 +1524,10 @@ const AdminDashboardPage = () => {
         {/* ============================================================== */}
         {/* TAB 7: CITIES & PRICING */}
         {/* ============================================================== */}
+        {activeTab === 'branches' && (
+          <BranchesManagementTab />
+        )}
+
         {activeTab === 'cities' && (
           <CitiesManagementTab />
         )}
