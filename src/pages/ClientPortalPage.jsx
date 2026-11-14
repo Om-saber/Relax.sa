@@ -1,4 +1,16 @@
 import Swal from 'sweetalert2';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix Leaflet default marker icon
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -25,6 +37,18 @@ import { useBooking } from '../context/BookingContext';
 import { useLanguage } from '../context/LanguageContext';
 import { TIME_SLOTS } from '../data/servicesData';
 
+
+function LocationMarker({ position, setPosition }) {
+  const map = useMapEvents({
+    click(e) {
+      setPosition(e.latlng);
+      map.flyTo(e.latlng, map.getZoom());
+    },
+  });
+  
+  if (!position || !position.lat || !position.lng) return null;
+  return <Marker position={[position.lat, position.lng]} />;
+}
 const ClientPortalPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout, updateUser } = useAuth();
@@ -57,7 +81,7 @@ const ClientPortalPage = () => {
     city: user?.city || 'الرياض',
     district: user?.district || '',
     address: user?.address || '',
-  });
+    lat: 24.7136, lng: 46.6753 });
 
   const currentPhone = user?.phone || lookupPhone;
 
@@ -891,7 +915,22 @@ const ClientPortalPage = () => {
                   />
                 </div>
 
-                <div className="pt-3 flex gap-2">
+                
+                {/* Interactive Map */}
+                <div className="mt-2 rounded-xl overflow-hidden border border-rose-200 relative shadow-inner" style={{ height: '200px', zIndex: 0 }}>
+                  <MapContainer center={[Number(profileForm.lat) || 24.7136, Number(profileForm.lng) || 46.6753]} zoom={11} style={{ height: '100%', width: '100%', zIndex: 0 }}>
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    />
+                    <LocationMarker 
+                      position={{ lat: Number(profileForm.lat) || 24.7136, lng: Number(profileForm.lng) || 46.6753 }} 
+                      setPosition={(pos) => setProfileForm({ ...profileForm, lat: pos.lat, lng: pos.lng })} 
+                    />
+                  </MapContainer>
+                </div>
+                <p className="text-[10px] text-[#8E717D] mt-1 text-center font-bold">اضغطي على الخريطة لتحديد موقعك بدقة</p>
+<div className="pt-3 flex gap-2">
                   <button
                     type="submit"
                     className="flex-1 py-3 rounded-2xl bg-[#CF3A69] text-white text-xs font-black shadow-md hover:bg-[#b02652]"
