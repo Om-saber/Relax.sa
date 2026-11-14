@@ -52,7 +52,7 @@ const StaffDashboardPage = () => {
       if (newStatus === 'completed') {
         alert('🎉 تم إنهاء الجلسة بنجاح وإضافة عمولتك لرصيدك!');
       }
-      window.location.reload(); 
+      // window.location.reload(); 
     } else {
       alert('فشل تحديث الحالة: ' + (res.error || 'خطأ غير معروف'));
     }

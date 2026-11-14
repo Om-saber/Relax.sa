@@ -258,7 +258,7 @@ const AdminDashboardPage = () => {
   const updateBookingStatus = async (id, status) => {
     if (isSpecialist) {
       const res = await updateStaffStatus(id, status.toUpperCase());
-      if (res.success) window.location.reload();
+      if (res.success) // window.location.reload();
       return res;
     }
     const res = await apiUpdateBookingStatus(id, status);
@@ -540,8 +540,7 @@ const AdminDashboardPage = () => {
   FiUser, count: clients.length, requiredPermission: 'manageClients' },
     { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
     { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
-    { id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers,
-  FiUser, requiredPermission: 'viewBookings' },
+    ...(isSpecialist ? [] : [{ id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers, requiredPermission: 'viewBookings' }]),
     { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
     { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
     { id: 'branches', label: 'إدارة الفروع', icon: FiHome, requiredPermission: 'manageCities' },
