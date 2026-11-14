@@ -102,6 +102,7 @@ const BookingModal = () => {
     setBookingError(null);
 
     try {
+      console.log('CART DUMP:', JSON.parse(JSON.stringify(cart)));
       const result = await bookingsApi.create({
         customerName: bookingDetails.name.trim(),
         customerPhone: bookingDetails.phone.replace(/\D/g, ''),
@@ -112,7 +113,13 @@ const BookingModal = () => {
         timeSlotKey: slotKey,
         items: cart
           .filter((ci) => ci.category !== 'addon')
-          .map((ci) => ({ serviceSlug: ci.id, quantity: ci.quantity || 1 })),
+          .map((ci) => {
+            // لو العنصر فيه slug يبقى دي باقة، غير كده يبقى خدمة
+            if (ci.slug) {
+              return { packageSlug: ci.slug, quantity: ci.quantity || 1 };
+            }
+            return { serviceSlug: ci.id, quantity: ci.quantity || 1 };
+          }),
         paymentMethod,
         notes: bookingDetails.specialistNote || undefined,
       });
