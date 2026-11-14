@@ -18,10 +18,13 @@ import { useAdminCities } from '../hooks/useAdminCities';
 import { adminApi } from '../api/adminApi';
 import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
+import SpecialistOverview from '../components/admin/SpecialistOverview';
+import StaffProfileTab from '../components/admin/StaffProfileTab';
 import {
   FiGrid,
   FiCalendar,
   FiUsers,
+  FiUser,
   FiUserCheck,
   FiMapPin,
   FiPackage,
@@ -56,10 +59,10 @@ import {
   FiMail,
   FiUserPlus,
   FiLock,
-  FiHome,
-} from 'react-icons/fi';
+  FiHome,} from 'react-icons/fi';
 import { FaCrown, FaWhatsapp } from 'react-icons/fa6';
 import { useAuth } from '../context/AuthContext';
+import { useStaffBookings } from '../hooks/useStaffBookings';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminBookings } from '../hooks/useAdminBookings';
 import { useAdminOverview } from '../hooks/useAdminOverview';
@@ -69,6 +72,38 @@ import { TIME_SLOTS } from '../data/servicesData';
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const isSpecialist = Array.isArray(user?.permissions) && user.permissions.includes('viewBookings') && !user.permissions.includes('manageStaff');
+  const canManageStaff = Array.isArray(user?.permissions) && user.permissions.includes('manageStaff');
+  const canManageRoles = Array.isArray(user?.permissions) && user.permissions.includes('manageRoles');
+  const canManageCities = Array.isArray(user?.permissions) && user.permissions.includes('manageCities');
+  const canManageContent = Array.isArray(user?.permissions) && user.permissions.includes('manageContent');
+  const canViewReports = Array.isArray(user?.permissions) && user.permissions.includes('viewReports');
+  const canManageComplaints = Array.isArray(user?.permissions) && user.permissions.includes('manageComplaints');
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+  const { todayBookings: myToday, upcomingBookings: myUpcoming, updateStatus: updateStaffStatus } = useStaffBookings(isSpecialist);
+  
   const {
     staffList,
     clients,
@@ -111,7 +146,7 @@ const AdminDashboardPage = () => {
   } = useAdminBookings();
 
   // ── Admin Staff from API (for reassignment) ─────────────
-  const { staff: apiStaffList, refetch: refetchStaff } = useAdminStaff();
+  const { staff: apiStaffList, refetch: refetchStaff } = useAdminStaff(canManageStaff);
 
   // ── Admin Roles & Permissions from API ──────────────────
   const {
@@ -119,7 +154,7 @@ const AdminDashboardPage = () => {
     permissions: apiPermissions,
     loading: adminRolesLoading,
     togglePermission: apiTogglePermission,
-  } = useAdminRoles();
+  } = useAdminRoles(canManageRoles);
 
   // Alias للأسماء القديمة المستخدمة في JSX
   const roles = apiRoles;
@@ -197,27 +232,33 @@ const AdminDashboardPage = () => {
     createBlackout: apiCreateBlackout,
     deleteBlackout: apiDeleteBlackout,
     loading: blackoutsLoading,
-  } = useAdminBlackouts();
+  } = useAdminBlackouts(canManageStaff);
 
   const {
     cities: apiCities,
     updateCity: apiUpdateCity,
-  } = useAdminCities();
+  } = useAdminCities(canManageCities);
 
-  const { cms: apiCms, update: apiUpdateCms } = useCmsSettings();
+  const { cms: apiCms, update: apiUpdateCms } = useCmsSettings(canManageContent);
 
-  const { reports: apiReports } = useAdminReports();
+  const { reports: apiReports } = useAdminReports(canViewReports);
 
   const {
     tickets: apiTickets,
     createTicket: apiCreateTicket,
     updateStatus: apiUpdateTicketStatus,
-  } = useAdminTickets();
+  } = useAdminTickets(canManageComplaints);
 
   // الـ API هو المصدر الوحيد للحقيقة — لا رجوع لبيانات تجريبية عند الخطأ.
-  const bookings = adminBookingsLoading || adminBookingsError ? [] : apiBookings;
+  const specialistBookings = [...(myToday || []), ...(myUpcoming || [])].filter((b, i, arr) => arr.findIndex((x) => x.id === b.id) === i);
+  const bookings = isSpecialist ? specialistBookings : (adminBookingsLoading || adminBookingsError ? [] : apiBookings);
 
   const updateBookingStatus = async (id, status) => {
+    if (isSpecialist) {
+      const res = await updateStaffStatus(id, status.toUpperCase());
+      if (res.success) window.location.reload();
+      return res;
+    }
     const res = await apiUpdateBookingStatus(id, status);
     if (!res.success) {
       console.error('[AdminDashboard] updateBookingStatus failed:', res.error);
@@ -493,9 +534,12 @@ const AdminDashboardPage = () => {
   const menuItems = [
     { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid, requiredPermission: 'viewBookings' },
     { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
-    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length, requiredPermission: 'manageClients' },
+    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers,
+  FiUser, count: clients.length, requiredPermission: 'manageClients' },
     { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
-    { id: 'bookings', label: 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
+    { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
+    { id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers,
+  FiUser, requiredPermission: 'viewBookings' },
     { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
     { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
     { id: 'branches', label: 'إدارة الفروع', icon: FiHome, requiredPermission: 'manageCities' },
@@ -509,6 +553,7 @@ const AdminDashboardPage = () => {
   // Filter menu items by user's permissions
   const userPermissions = Array.isArray(user?.permissions) ? user.permissions : [];
   const visibleMenuItems = menuItems.filter((item) => {
+    if (item.isSpecialistOnly && !isSpecialist) return false;
     if (!item.requiredPermission) return true;
     return userPermissions.includes(item.requiredPermission);
   });
@@ -722,117 +767,59 @@ const AdminDashboardPage = () => {
         {/* ============================================================== */}
         {/* TAB 1: OVERVIEW & KPIs */}
         {/* ============================================================== */}
-        {activeTab === 'overview' && (
+        {activeTab === 'overview' && isSpecialist && <SpecialistOverview bookings={bookings} updateBookingStatus={updateBookingStatus} user={user} />}
+
+        {activeTab === 'overview' && !isSpecialist && (
           <div className="space-y-6">
             {/* 4 KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-bold text-[#8E717D]">إجمالي الإيرادات</span>
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <FiDollarSign />
-                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><FiDollarSign /></div>
                 </div>
-                <div className="text-2xl font-black text-emerald-700">
-                  {overviewLoading ? '...' : `${displayRevenue.toLocaleString()} ر.س`}
-                </div>
-                <span className="text-[10px] text-emerald-600 font-bold block mt-1">
-                  +18% نمو المبيعات
-                </span>
+                <div className="text-2xl font-black text-emerald-700">{overviewLoading ? '...' : `${displayRevenue.toLocaleString()} ر.س`}</div>
+                <span className="text-[10px] text-emerald-600 font-bold block mt-1">+18% نمو المبيعات</span>
               </div>
-
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-bold text-[#8E717D]">الحجوزات النشطة اليوم</span>
-                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <FiCalendar />
-                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center"><FiCalendar /></div>
                 </div>
                 <div className="text-2xl font-black text-blue-700">{overviewLoading ? '...' : displayActiveBookings}</div>
-                <span className="text-[10px] text-blue-600 font-bold block mt-1">
-                  {displayPendingBookings} حجز قيد التأكيد الفوري
-                </span>
+                <span className="text-[10px] text-blue-600 font-bold block mt-1">{displayPendingBookings} حجز قيد التأكيد الفوري</span>
               </div>
-
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-bold text-[#8E717D]">طاقم الأخصائيات</span>
-                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                    <FiUserCheck />
-                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center"><FiUserCheck /></div>
                 </div>
-                <div className="text-2xl font-black text-purple-700">
-                  {overviewLoading ? '...' : `${displayStaffAvailable} / ${displayStaffTotal}`}
-                </div>
-                <span className="text-[10px] text-purple-600 font-bold block mt-1">
-                  متاحة للزيارات المنزلية
-                </span>
+                <div className="text-2xl font-black text-purple-700">{overviewLoading ? '...' : `${displayStaffAvailable} / ${displayStaffTotal}`}</div>
+                <span className="text-[10px] text-purple-600 font-bold block mt-1">متاحة للزيارات المنزلية</span>
               </div>
-
               <div className="bg-white rounded-3xl p-5 border border-rose-100 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-xs font-bold text-[#8E717D]">عمولات الموظفات</span>
-                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                    <FiAward />
-                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center"><FiAward /></div>
                 </div>
-                <div className="text-2xl font-black text-amber-700">
-                  {overviewLoading ? '...' : `${displayCommissions.toFixed(0)} ر.س`}
-                </div>
-                <span className="text-[10px] text-amber-600 font-bold block mt-1">
-                  مستحقات الجلسات المنجزة
-                </span>
+                <div className="text-2xl font-black text-amber-700">{overviewLoading ? '...' : `${displayCommissions.toFixed(0)} ر.س`}</div>
+                <span className="text-[10px] text-amber-600 font-bold block mt-1">مستحقات الجلسات المنجزة</span>
               </div>
             </div>
-
-            {/* City Capacity Overview */}
-            <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm">
-              <h3 className="text-sm font-black text-[#2B151F] mb-4 flex items-center gap-2">
-                <FiMapPin className="text-[#CF3A69]" />
-                <span>الطاقة الاستيعابية وحجوزات الفروع اليوم</span>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {(overview?.capacity || []).map(city => (
-                  <div key={city.cityKey} className="p-4 rounded-2xl bg-[#FFF9FA] border border-rose-100/70">
-                    <div className="flex justify-between text-xs font-black mb-1">
-                      <span>{city.cityName}</span>
-                      <span className="text-[#CF3A69]">{city.bookingsToday} / {city.maxDailyCapacity} حجز</span>
-                    </div>
-                    <div className="h-2 rounded-full bg-rose-100 overflow-hidden mt-2">
-                      <div
-                        className="h-full bg-gradient-to-r from-[#CF3A69] to-[#E65A84] rounded-full"
-                        style={{ width: `${Math.min(100, city.maxDailyCapacity > 0 ? (city.bookingsToday / city.maxDailyCapacity) * 100 : 0)}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-[#8E717D] mt-1.5 block">
-                      ساعات العمل: {city.operatingHours || '—'}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Bookings Feed */}
+            {/* Live Stream */}
             <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-black text-[#2B151F] flex items-center gap-2">
                   <FiClock className="text-[#CF3A69]" />
                   <span>أحدث الحجوزات اليوم (Live Stream)</span>
                 </h3>
-                <button
-                  onClick={() => setActiveTab('bookings')}
-                  className="text-xs text-[#CF3A69] font-bold hover:underline"
-                >
+                <button onClick={() => setActiveTab('bookings')} className="text-xs text-[#CF3A69] font-bold hover:underline">
                   إدارة كل الحجوزات ({bookings.length})
                 </button>
               </div>
-
               <div className="space-y-3">
                 {bookings.slice(0, 4).map((b) => (
-                  <div
-                    key={b.id}
-                    className="p-3.5 rounded-2xl bg-[#FFF9FA] border border-rose-100 flex items-center justify-between gap-3 text-xs"
-                  >
+                  <div key={b.id} className="p-3.5 rounded-2xl bg-[#FFF9FA] border border-rose-100 flex items-center justify-between gap-3 text-xs">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-black text-[#CF3A69]">{b.bookingNumber}</span>
@@ -843,22 +830,18 @@ const AdminDashboardPage = () => {
                         {b.services?.map((s) => s.title).join(' • ')}
                       </p>
                     </div>
-
-                    <div className="text-end shrink-0">
-                      <span className="font-black text-[#2B151F] block">{b.totalPrice} ر.س</span>
-                      <span
-                        className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                          b.status === 'completed'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : b.status === 'in_progress'
-                            ? 'bg-purple-100 text-purple-800'
-                            : b.status === 'on_way'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                        }`}
-                      >
-                        {b.status}
-                      </span>
+                    <div className="text-end shrink-0 flex items-center gap-3">
+                      <div>
+                        <span className="font-black text-[#2B151F] block">{b.totalPrice} ر.س</span>
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                          b.status === 'completed' ? 'bg-emerald-100 text-emerald-800' :
+                          b.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                          b.status === 'on_way' ? 'bg-blue-100 text-blue-800' :
+                          'bg-amber-100 text-amber-800'
+                        }`}>
+                          {b.status}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1263,7 +1246,43 @@ const AdminDashboardPage = () => {
         {/* ============================================================== */}
         {/* TAB 5: BOOKINGS & OPERATIONS (مع منع الحجز المزدوج تماماً) */}
         {/* ============================================================== */}
-        {activeTab === 'bookings' && (
+        
+        {activeTab === 'bookings' && isSpecialist && (
+          <div className="bg-white rounded-3xl p-6 border border-rose-100 shadow-sm max-w-4xl mx-auto mt-6">
+            <h3 className="text-lg font-black text-[#2B151F] mb-6 flex items-center gap-2">
+              <FiCalendar className="text-[#CF3A69]" /> مواعيدي وجدولي
+            </h3>
+            <div className="divide-y divide-rose-50">
+              {bookings.length === 0 ? (
+                <div className="p-10 text-center text-[#8E717D] font-bold">لا توجد مواعيد مسندة إليكِ حالياً.</div>
+              ) : (
+                bookings.map(b => (
+                  <div key={b.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-rose-50/30 transition-colors rounded-xl">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-bold bg-rose-50 text-[#CF3A69] px-2 py-0.5 rounded-md border border-rose-100">{b.bookingNumber}</span>
+                        <span className="text-sm font-black text-[#2B151F]">{b.customerName}</span>
+                      </div>
+                      <p className="text-xs text-[#8E717D] font-bold flex items-center gap-2 mt-1">
+                        <span><FiClock className="inline mr-1" size={12}/> {b.date}</span>
+                        <span><FiMapPin className="inline mr-1" size={12}/> {b.city || 'غير محدد'}</span>
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                       {b.status?.toUpperCase() === 'PENDING' && <span className="px-4 py-1.5 bg-amber-50 text-amber-600 rounded-xl font-bold text-xs">قيد الانتظار</span>}
+                       {b.status?.toUpperCase() === 'CONFIRMED' && <button onClick={() => updateBookingStatus(b.id, 'ON_WAY')} className="px-4 py-1.5 bg-blue-600 text-white rounded-xl font-bold text-xs hover:bg-blue-700 shadow-sm">في الطريق</button>}
+                       {b.status?.toUpperCase() === 'ON_WAY' && <button onClick={() => updateBookingStatus(b.id, 'IN_PROGRESS')} className="px-4 py-1.5 bg-purple-600 text-white rounded-xl font-bold text-xs hover:bg-purple-700 shadow-sm">بدأت الجلسة</button>}
+                       {b.status?.toUpperCase() === 'IN_PROGRESS' && <button onClick={() => updateBookingStatus(b.id, 'COMPLETED')} className="px-4 py-1.5 bg-emerald-600 text-white rounded-xl font-bold text-xs hover:bg-emerald-700 shadow-sm">إنهاء الجلسة</button>}
+                       {b.status?.toUpperCase() === 'COMPLETED' && <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs">مكتملة</span>}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'bookings' && !isSpecialist && (
           <div className="space-y-6">
             {adminBookingsError && (
               <div className="text-xs font-bold px-4 py-3 rounded-2xl border bg-amber-50 text-amber-800 border-amber-200">
@@ -2381,7 +2400,6 @@ const AdminDashboardPage = () => {
         {activeTab === 'staff-management' && (
           <StaffManagementTab />
         )}
-
         {activeTab === 'roles-permissions' && (
           <RolesPermissionsTab />
         )}

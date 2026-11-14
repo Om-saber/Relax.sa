@@ -61,6 +61,9 @@ const AppRoutes = () => {
           }
         />
         <Route path="/admin/*" element={<Navigate to="/dashboard" replace />} />
+        
+        {/* Staff Portal */}
+        <Route path="/staff" element={<Navigate to="/dashboard" replace />} />
         <Route path="/staff-login" element={<StaffLoginPage />} />
 
         {/* Public Website Pages & User/Staff Portals */}
@@ -75,14 +78,6 @@ const AppRoutes = () => {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/staff"
-            element={
-              <ProtectedRoute requiredRole="staff">
-                <StaffDashboardPage />
-              </ProtectedRoute>
-            }
-          />
           <Route
             path="/client-portal"
             element={

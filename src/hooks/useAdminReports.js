@@ -16,7 +16,7 @@ const DEFAULT = {
   topServices: [],
 };
 
-export function useAdminReports() {
+export function useAdminReports(enabled = true) {
   const [reports, setReports] = useState(DEFAULT);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,6 +40,7 @@ export function useAdminReports() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     load();
   }, [load]);
 

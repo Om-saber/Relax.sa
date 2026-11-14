@@ -9,7 +9,7 @@ const DEFAULT = {
   workingHoursText: '',
 };
 
-export function useCmsSettings() {
+export function useCmsSettings(enabled = true) {
   const [cms, setCms] = useState(DEFAULT);
   const [loading, setLoading] = useState(true);
 
@@ -25,7 +25,8 @@ export function useCmsSettings() {
     }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!enabled) return; load(); }, [load]);
 
   const update = async (patch) => {
     try {

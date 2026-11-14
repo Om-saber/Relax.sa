@@ -10,7 +10,7 @@ function adaptTicket(t) {
   };
 }
 
-export function useAdminTickets() {
+export function useAdminTickets(enabled = true) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,6 +31,7 @@ export function useAdminTickets() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchTickets();
   }, [fetchTickets]);
 

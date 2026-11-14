@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../api/adminApi';
 
-export function useAdminBlackouts() {
+export function useAdminBlackouts(enabled = true) {
   const [blackouts, setBlackouts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,6 +22,7 @@ export function useAdminBlackouts() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchBlackouts();
   }, [fetchBlackouts]);
 

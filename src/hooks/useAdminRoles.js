@@ -39,7 +39,7 @@ function adaptRole(raw) {
   };
 }
 
-export function useAdminRoles() {
+export function useAdminRoles(enabled = true) {
   const [roles, setRoles] = useState([]);
   const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,6 +64,7 @@ export function useAdminRoles() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchAll();
   }, [fetchAll]);
 

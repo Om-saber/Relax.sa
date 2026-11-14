@@ -16,7 +16,7 @@ export const WEEKDAY_LABELS = {
  * ويرجّع كل تفاصيل StaffProfile:
  * rating, reviewsCount, city, commissionRate, specialties, offDays, ...
  */
-export function useAdminStaff() {
+export function useAdminStaff(enabled = true) {
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -85,6 +85,7 @@ export function useAdminStaff() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchStaff();
   }, [fetchStaff]);
 

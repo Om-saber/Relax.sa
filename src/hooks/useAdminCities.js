@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { adminApi } from '../api/adminApi';
 
-export function useAdminCities() {
+export function useAdminCities(enabled = true) {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -22,6 +22,7 @@ export function useAdminCities() {
   }, []);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchCities();
   }, [fetchCities]);
 
