@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
@@ -145,7 +146,7 @@ const ClientPortalPage = () => {
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm('هل أنتِ متأكدة من رغبتك بإلغاء هذا الموعد؟')) return;
+    if (!(await Swal.fire({ text: 'هل أنتِ متأكدة من رغبتك بإلغاء هذا الموعد؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) return;
 
     setCancellingId(bookingId);
     try {

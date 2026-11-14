@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState } from 'react';
 import {
   FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff, FiSearch,
@@ -43,7 +44,7 @@ const ServicesManagementTab = ({ categories = [] }) => {
   const [saving, setSaving] = useState(false);
   const [modalError, setModalError] = useState('');
 
-  const openCreate = () => {
+  const openCreate = async () => {
     setModal('create');
     setEditing(null);
     setForm({ ...EMPTY_FORM, categoryId: categories[0]?.id || '' });
@@ -112,7 +113,7 @@ const ServicesManagementTab = ({ categories = [] }) => {
   };
 
   const handleDelete = async (svc) => {
-    if (!window.confirm(`حذف "${svc.titleAr}"؟ لا يمكن التراجع.`)) return;
+    if (!(await Swal.fire({ text: `حذف "${svc.titleAr}"؟ لا يمكن التراجع.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) return;
     const res = await deleteService(svc.id);
     if (!res.success) alert(res.error || 'فشل الحذف (ممكن تكون مستخدمة في حجوزات)');
   };

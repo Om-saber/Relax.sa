@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState } from 'react';
 import {
   FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff,
@@ -84,7 +85,7 @@ const CitiesManagementTab = () => {
   };
 
   const handleDelete = async (city) => {
-    if (!window.confirm(`حذف "${city.nameAr}"؟ لا يمكن التراجع.`)) return;
+    if (!(await Swal.fire({ text: `حذف "${city.nameAr}"؟ لا يمكن التراجع.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) return;
     const res = await deleteCity(city.id);
     if (!res.success) alert(res.error || 'فشل الحذف (ممكن تكون مرتبطة بحجوزات)');
   };

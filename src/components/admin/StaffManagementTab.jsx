@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState, useEffect } from 'react';
 import {
   FiUsers, FiUserPlus, FiEdit2, FiTrash2, FiKey,
@@ -95,7 +96,7 @@ const StaffManagementTab = () => {
   };
 
   const handleDelete = async (user) => {
-    if (!window.confirm(`هل أنتِ متأكدة من حذف/تعطيل "${user.name}"؟`)) return;
+    if (!(await Swal.fire({ text: `هل أنتِ متأكدة من حذف/تعطيل "${user.name}"؟`, icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) return;
     try {
       await adminApi.deleteUser(user.id);
       await loadData();

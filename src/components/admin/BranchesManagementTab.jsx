@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState } from 'react';
 import {
   FiPlus, FiEdit2, FiTrash2, FiEye, FiEyeOff,
@@ -84,7 +85,7 @@ const BranchesManagementTab = () => {
   };
 
   const handleDelete = async (branch) => {
-    if (!window.confirm(`حذف "${branch.nameAr}"؟ لا يمكن التراجع.`)) return;
+    if (!(await Swal.fire({ text: `حذف "${branch.nameAr}"؟ لا يمكن التراجع.`, icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) return;
     const res = await deleteBranch(branch.id);
     if (!res.success) alert(res.error || 'فشل الحذف (ممكن يكون مرتبط بحجوزات)');
   };

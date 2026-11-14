@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -139,8 +140,8 @@ const BookingSettingsTab = () => {
   };
 
   // Reset to defaults
-  const handleReset = () => {
-    if (window.confirm('هل أنت متأكد من استعادة كافة إعدادات الحجز والرسائل إلى الحالة الافتراضية؟')) {
+  const handleReset = async () => {
+    if ((await Swal.fire({ text: 'هل أنت متأكد من استعادة كافة إعدادات الحجز والرسائل إلى الحالة الافتراضية؟', icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) {
       resetBookingSettings();
       setHasUnsavedChanges(true);
       showToast('تمت استعادة القيم الافتراضية — اضغطي حفظ لتأكيدها 🔄');

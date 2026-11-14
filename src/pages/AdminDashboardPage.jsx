@@ -1,3 +1,4 @@
+import Swal from 'sweetalert2';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
@@ -711,7 +712,7 @@ const AdminDashboardPage = () => {
           </Link>
 
           <button
-            onClick={() => {
+            onClick={async () => {
               logout();
               navigate('/login');
             }}
@@ -1221,8 +1222,8 @@ const AdminDashboardPage = () => {
                                   📊
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    if (confirm(`هل أنت متأكد من حذف الموظفة (${st.name})؟`)) {
+                                  onClick={async () => {
+                                    if ((await Swal.fire({ text: `هل أنت متأكد من حذف الموظفة (${st.name})؟`, icon: 'warning', showCancelButton: true, confirmButtonText: 'نعم، متأكد', cancelButtonText: 'إلغاء', confirmButtonColor: '#CF3A69', cancelButtonColor: '#8E717D' })).isConfirmed) {
                                       deleteStaff(st.id);
                                     }
                                   }}
