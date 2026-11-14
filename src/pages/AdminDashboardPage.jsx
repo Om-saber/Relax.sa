@@ -628,7 +628,7 @@ const AdminDashboardPage = () => {
                   Let's Relax
                 </span>
                 <span className="text-[10px] font-bold text-[#CF3A69] block mt-1 tracking-wider uppercase">
-                  لوحة التحكم الإدارية
+                  {isSpecialist ? 'بوابة الأخصائية' : 'لوحة التحكم الإدارية'}
                 </span>
               </div>
             )}
@@ -730,7 +730,7 @@ const AdminDashboardPage = () => {
         <header className="h-16 shrink-0 bg-white border-b border-rose-100/80 px-6 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
             <div>
-              <span className="text-[10px] font-bold text-[#8E717D] block">لوحة تحكم الإدارة /</span>
+              <span className="text-[10px] font-bold text-[#8E717D] block">{isSpecialist ? 'بوابة الأخصائية /' : 'لوحة تحكم الإدارة /'}</span>
               <h2 className="text-sm sm:text-base font-black text-[#2B151F]">
                 {visibleMenuItems.find((m) => m.id === activeTab)?.label}
               </h2>

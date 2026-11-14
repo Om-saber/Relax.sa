@@ -3,6 +3,8 @@ import { FiCalendar, FiClock, FiMapPin, FiPhone, FiCheckCircle, FiDollarSign, Fi
 import { FaWhatsapp } from 'react-icons/fa6';
 import SpecialistBookingModal from './SpecialistBookingModal';
 
+
+const formatDate = (val) => val ? new Date(val).toLocaleDateString('ar-SA', { timeZone: 'UTC' }) : 'غير محدد';
 const SpecialistOverview = ({ bookings, updateBookingStatus, user }) => {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -60,7 +62,7 @@ const SpecialistOverview = ({ bookings, updateBookingStatus, user }) => {
               <h2 className="text-2xl font-black mb-1">{nextSession.customerName}</h2>
               <p className="text-sm font-bold text-white/90 flex items-center gap-4">
                 <span><FiClock className="inline mr-1"/> {nextSession.date?.slice(0, 10)}</span>
-                <span><FiMapPin className="inline mr-1"/> {nextSession.city || 'غير محدد'}</span>
+                <span><FiMapPin className="inline mr-1"/> {nextSession.cityName || nextSession.city || 'غير محدد'}</span>
               </p>
             </div>
             <div className="flex gap-2">
@@ -135,7 +137,7 @@ const SpecialistOverview = ({ bookings, updateBookingStatus, user }) => {
                   <span className="text-[10px] bg-rose-50 text-[#CF3A69] px-2 py-0.5 rounded-full font-bold border border-rose-100">{getArabicStatus(b.status)}</span>
                 </div>
                 <p className="text-[11px] text-[#5A3F4B] font-bold mt-1">
-                  {b.items?.map(s => s.service?.titleAr || s.titleAr).join(' • ') || 'خدمة غير محددة'}
+                  {(b.services || b.items || []).map(s => s.titleAr || s.service?.titleAr).filter(Boolean).join(' • ') || 'خدمة غير محددة'}
                 </p>
                 <p className="text-[11px] text-[#8E717D] font-bold flex items-center gap-3 mt-1">
                   <span><FiCalendar className="inline mr-1"/> {b.date?.slice(0, 10)}</span>
