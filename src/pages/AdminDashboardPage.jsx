@@ -535,12 +535,12 @@ const AdminDashboardPage = () => {
 
   // Sidebar Menu Items
   const menuItems = [
-    { id: 'overview', label: 'نظرة عامة والعمليات', icon: FiGrid, requiredPermission: 'viewBookings' },
+    { id: 'overview', label: 'نظرة عامة', icon: FiGrid, requiredPermission: 'viewBookings' },
     { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
     { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers,
   FiUser, count: clients.length, requiredPermission: 'manageClients' },
     { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
-    { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات والعمليات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
+    { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
     ...(isSpecialist ? [] : [{ id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers, requiredPermission: 'viewBookings' }]),
     { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
     { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
@@ -732,7 +732,7 @@ const AdminDashboardPage = () => {
         <header className="h-16 shrink-0 bg-white border-b border-rose-100/80 px-6 flex items-center justify-between z-20">
           <div className="flex items-center gap-3">
             <div>
-              <span className="text-[10px] font-bold text-[#8E717D] block">{isSpecialist ? 'بوابة الأخصائية /' : 'لوحة تحكم الإدارة /'}</span>
+              <span className="text-[10px] font-bold text-[#8E717D] block">{isSpecialist ? 'بوابة الأخصائية /' : 'لوحة التحكم /'}</span>
               <h2 className="text-sm sm:text-base font-black text-[#2B151F]">
                 {visibleMenuItems.find((m) => m.id === activeTab)?.label}
               </h2>
@@ -746,19 +746,7 @@ const AdminDashboardPage = () => {
               <span>نظام منع الحجز المزدوج نشط 🟢</span>
             </div>
 
-            {/* Quick Link to Staff & Client Portals */}
-            <Link
-              to="/staff"
-              className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition-colors"
-            >
-              بوابة الموظفات 💆‍♀️
-            </Link>
-            <Link
-              to="/client-portal"
-              className="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-[#CF3A69] border border-rose-200 text-xs font-bold transition-colors"
-            >
-              صفحة العميلة 🌸
-            </Link>
+            
           </div>
         </header>
 
