@@ -534,22 +534,24 @@ const AdminDashboardPage = () => {
   });
 
   // Sidebar Menu Items
-  const menuItems = [
-    { id: 'overview', label: 'نظرة عامة', icon: FiGrid, requiredPermission: 'viewBookings' },
-    { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles' },
-    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers,
-  FiUser, count: clients.length, requiredPermission: 'manageClients' },
-    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff' },
-    { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings' },
-    ...(isSpecialist ? [] : [{ id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers, requiredPermission: 'viewBookings' }]),
-    { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices' },
-    { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff' },
-    { id: 'branches', label: 'إدارة الفروع', icon: FiHome, requiredPermission: 'manageCities' },
-    { id: 'cities', label: 'المدن، الفروع ورسوم التنقل', icon: FiMapPin, requiredPermission: 'manageCities' },
-    { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage, requiredPermission: 'manageServices' },
-    { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent' },
-    { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2, requiredPermission: 'viewReports' },
-    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: apiTickets.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints' },
+    const menuItems = [
+    { id: 'overview', label: 'نظرة عامة', icon: FiGrid, requiredPermission: 'viewBookings', group: 'العمليات اليومية' },
+    { id: 'bookings', label: isSpecialist ? 'مواعيدي وجدولي' : 'إدارة الحجوزات', icon: FiCalendar, count: bookings.length, requiredPermission: 'viewBookings', group: 'العمليات اليومية' },
+    { id: 'reports', label: 'التقارير والمبيعات الشاملة', icon: FiBarChart2, requiredPermission: 'viewReports', group: 'العمليات اليومية' },
+    
+    { id: 'clients', label: 'إدارة بيانات العملاء CRM', icon: FiUsers, count: clients.length, requiredPermission: 'manageClients', group: 'العملاء والفريق' },
+    { id: 'staff', label: 'إدارة الموظفات والعمولات', icon: FiUserCheck, count: apiStaffList.length, requiredPermission: 'manageStaff', group: 'العملاء والفريق' },
+    { id: 'crm', label: 'خدمة العملاء والشكاوى', icon: FiLifeBuoy, count: apiTickets.filter(c => c.status !== 'resolved').length, requiredPermission: 'manageComplaints', group: 'العملاء والفريق' },
+    { id: 'roles', label: 'إدارة الصلاحيات والأدوار', icon: FiShield, requiredPermission: 'manageRoles', group: 'العملاء والفريق' },
+    
+    { id: 'services', label: 'الخدمات، الباقات والأسعار', icon: FiPackage, requiredPermission: 'manageServices', group: 'الإعدادات والكتالوج' },
+    { id: 'cities', label: 'المدن، الفروع ورسوم التنقل', icon: FiMapPin, requiredPermission: 'manageCities', group: 'الإعدادات والكتالوج' },
+    { id: 'branches', label: 'إدارة الفروع', icon: FiHome, requiredPermission: 'manageCities', group: 'الإعدادات والكتالوج' },
+    { id: 'booking-settings', label: 'خيارات وإعدادات الحجز', icon: FiSliders, requiredPermission: 'manageServices', group: 'الإعدادات والكتالوج' },
+    { id: 'capacity', label: 'المواعيد والطاقة الاستيعابية', icon: FiClock, requiredPermission: 'manageStaff', group: 'الإعدادات والكتالوج' },
+    { id: 'cms', label: 'إدارة المحتوى والبنرات', icon: FiFileText, requiredPermission: 'manageContent', group: 'الإعدادات والكتالوج' },
+    
+    ...(isSpecialist ? [] : [{ id: 'my-profile', label: 'ملفي الشخصي', icon: FiUsers, requiredPermission: 'viewBookings', group: 'الحساب' }]),
   ];
 
   // Filter menu items by user's permissions
@@ -667,36 +669,36 @@ const AdminDashboardPage = () => {
 
         {/* Sidebar Nav Links */}
         <nav className="flex-1 overflow-y-auto px-3 py-2 space-y-1 scrollbar-thin scrollbar-thumb-rose-200">
-          {visibleMenuItems.map((item) => {
-            const Icon = item.icon;
+          {visibleMenuItems.map((item, index) => {
+            const showGroupHeader = index === 0 || visibleMenuItems[index - 1].group !== item.group;
             const isActive = activeTab === item.id;
 
             return (
-              <button
-                key={item.id}
-                onClick={() => handleTabChange(item.id)}
-                className={`w-full flex items-center justify-between p-3 rounded-2xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-[#CF3A69] to-[#E65A84] text-white shadow-md shadow-rose-400/25'
-                    : 'text-[#4A2838] hover:bg-[#FFF0F3] hover:text-[#CF3A69]'
-                }`}
-                title={item.label}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className={`text-base shrink-0 ${isActive ? 'text-white' : 'text-[#CF3A69]'}`} />
-                  {isSidebarOpen && <span className="truncate">{item.label}</span>}
-                </div>
-
-                {isSidebarOpen && item.count !== undefined && (
-                  <span
-                    className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-rose-100 text-[#CF3A69]'
-                    }`}
-                  >
-                    {item.count}
-                  </span>
+              <React.Fragment key={item.id}>
+                {showGroupHeader && (
+                  <div className="px-3 mt-4 mb-1 text-[10px] font-bold text-[#8E717D] uppercase tracking-wider">
+                    {item.group}
+                  </div>
                 )}
-              </button>
+                <button
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-sm transition-all ${
+                    isActive
+                      ? 'bg-[#CF3A69] text-white shadow-md shadow-rose-200'
+                      : 'text-[#5A3F4B] hover:bg-rose-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <item.icon className={isActive ? 'text-white' : 'text-[#8E717D]'} />
+                    <span>{item.label}</span>
+                  </div>
+                  {item.count > 0 && (
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-rose-100 text-[#CF3A69]'}`}>
+                      {item.count}
+                    </span>
+                  )}
+                </button>
+              </React.Fragment>
             );
           })}
         </nav>
