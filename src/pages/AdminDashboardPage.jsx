@@ -20,6 +20,8 @@ import { catalogApi } from '../api/catalogApi';
 import RolesPermissionsTab from '../components/admin/RolesPermissionsTab';
 import SpecialistOverview from '../components/admin/SpecialistOverview';
 import StaffProfileTab from '../components/admin/StaffProfileTab';
+
+const formatDate = (val) => val ? new Date(val).toLocaleDateString('ar-SA', { timeZone: 'UTC' }) : 'غير محدد';
 import {
   FiGrid,
   FiCalendar,
@@ -824,7 +826,7 @@ const AdminDashboardPage = () => {
                       <div className="flex items-center gap-2">
                         <span className="font-black text-[#CF3A69]">{b.bookingNumber}</span>
                         <span className="font-bold text-[#2B151F]">{b.customerName}</span>
-                        <span className="text-[10px] text-[#8E717D]">({b.city})</span>
+                        <span className="text-[10px] text-[#8E717D]">({b.cityName || b.city || 'غير محدد'})</span>
                       </div>
                       <p className="text-[11px] text-[#5A3F4B] mt-0.5 font-bold">
                         {b.services?.map((s) => s.title).join(' • ')}
@@ -1195,7 +1197,7 @@ const AdminDashboardPage = () => {
                             {/* 8. City & Commission */}
                             <td className="py-3.5 px-4 whitespace-nowrap">
                               <div className="space-y-0.5 text-xs font-bold">
-                                <span className="text-[#2B151F] block">{st.city}</span>
+                                <span className="text-[#2B151F] block">{st.cityName || st.city || 'غير محدد'}</span>
                                 <span className="text-[11px] text-[#CF3A69] block">
                                   {st.commissionRate}% عمولة
                                 </span>
@@ -1264,8 +1266,8 @@ const AdminDashboardPage = () => {
                         <span className="text-sm font-black text-[#2B151F]">{b.customerName}</span>
                       </div>
                       <p className="text-xs text-[#8E717D] font-bold flex items-center gap-2 mt-1">
-                        <span><FiClock className="inline mr-1" size={12}/> {b.date}</span>
-                        <span><FiMapPin className="inline mr-1" size={12}/> {b.city || 'غير محدد'}</span>
+                        <span><FiClock className="inline mr-1" size={12}/> {formatDate(b.date)}</span>
+                        <span><FiMapPin className="inline mr-1" size={12}/> {b.cityName || b.city || 'غير محدد'}</span>
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -1361,11 +1363,11 @@ const AdminDashboardPage = () => {
                           </span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <div>{b.city}</div>
+                          <div>{b.cityName || b.city || 'غير محدد'}</div>
                           <span className="text-[10px] text-[#8E717D]">{b.district || 'حي عام'}</span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <div className="text-[#2B151F] font-black">{b.date}</div>
+                          <div className="text-[#2B151F] font-black">{formatDate(b.date)}</div>
                           <span className="text-[10px] text-[#8E717D]">{b.timeSlot}</span>
                         </td>
                         <td className="p-4">
@@ -2004,7 +2006,7 @@ const AdminDashboardPage = () => {
                 <div>
                   <label className="text-xs font-bold text-[#2B151F] block mb-1">المدينة والتغطية</label>
                   <select
-                    value={staffForm.city}
+                    value={staffForm.cityName || staffForm.city || 'غير محدد'}
                     onChange={(e) => setStaffForm({ ...staffForm, city: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold text-[#2B151F] focus:outline-none focus:border-[#CF3A69]"
                   >
@@ -2358,7 +2360,7 @@ const AdminDashboardPage = () => {
                 <input
                   type="date"
                   required
-                  value={blackoutForm.date}
+                  value={formatDate(blackoutForm.date)}
                   onChange={(e) => setBlackoutForm({ ...blackoutForm, date: e.target.value })}
                   className="w-full px-4 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold"
                 />
@@ -2367,7 +2369,7 @@ const AdminDashboardPage = () => {
               <div>
                 <label className="text-xs font-bold text-[#2B151F] block mb-1">الفرع / المدينة</label>
                 <select
-                  value={blackoutForm.city}
+                  value={blackoutForm.cityName || blackoutForm.city || 'غير محدد'}
                   onChange={(e) => setBlackoutForm({ ...blackoutForm, city: e.target.value })}
                   className="w-full px-3 py-2.5 rounded-xl bg-[#FFF9FA] border border-rose-200 text-xs font-bold"
                 >
