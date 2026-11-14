@@ -1537,6 +1537,9 @@ const AdminDashboardPage = () => {
           <BranchesManagementTab />
         )}
 
+        {activeTab === 'my-profile' && (
+          <StaffProfileTab />
+        )}
         {activeTab === 'cities' && (
           <CitiesManagementTab />
         )}
