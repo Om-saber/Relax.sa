@@ -63,7 +63,15 @@ const AppRoutes = () => {
         <Route path="/admin/*" element={<Navigate to="/dashboard" replace />} />
         
         {/* Staff Portal */}
-        <Route path="/staff" element={<Navigate to="/dashboard" replace />} />
+        {/* P1-14: STAFF always lands on /staff (the old redirect to /dashboard looped for staff without permissions) */}
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute requiredRole="staff">
+              <StaffDashboardPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/staff-login" element={<StaffLoginPage />} />
 
         {/* Public Website Pages & User/Staff Portals */}

@@ -234,6 +234,48 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('letsrelax_refresh_token');
   };
 
+  // P1-21: 401 interceptor. All API modules call fetch directly, so we wrap fetch once here.
+  // On a 401 from the API (except /auth/* itself) we refresh once and retry the request once
+  // with the new token; if the refresh fails we log out locally. Concurrent 401s share one refresh.
+  useEffect(() => {
+    const originalFetch = window.fetch;
+    let refreshInFlight = null;
+
+    window.fetch = async (input, init = {}) => {
+      const response = await originalFetch(input, init);
+
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : null;
+      if (
+        response.status !== 401 ||
+        !url ||
+        !url.startsWith(API_BASE) ||
+        url.startsWith(`${API_BASE}/auth/`) ||
+        !localStorage.getItem('letsrelax_refresh_token')
+      ) {
+        return response;
+      }
+
+      if (!refreshInFlight) {
+        refreshInFlight = refreshAccessToken().finally(() => {
+          refreshInFlight = null;
+        });
+      }
+      const refreshed = await refreshInFlight;
+      if (!refreshed.success) {
+        clearLocalSession();
+        return response;
+      }
+
+      const headers = new Headers(init.headers || {});
+      headers.set('Authorization', `Bearer ${localStorage.getItem('letsrelax_access_token')}`);
+      return originalFetch(input, { ...init, headers });
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, []);
+
   // P1-20a: invalidate refresh token on server; local clear in finally
   // The tokens are read first, then the local session is cleared right away, because the callers
   // call logout() without awaiting and navigate immediately (e.g. to /staff-login). Clearing again

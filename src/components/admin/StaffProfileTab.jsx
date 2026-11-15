@@ -25,7 +25,7 @@ const StaffProfileTab = () => {
 
     try {
       const token = localStorage.getItem('accessToken') || localStorage.getItem('letsrelax_access_token');
-      const res = await fetch('http://localhost:3000/api/v1/users/me', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'}/users/me`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
