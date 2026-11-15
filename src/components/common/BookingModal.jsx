@@ -86,10 +86,16 @@ const BookingModal = () => {
     }
 
     const CITY_NAME_TO_KEY = { 'الرياض': 'riyadh', 'الخبر': 'khobar', 'الدمام': 'dammam', 'جدة': 'jeddah' };
-    const cityKey = CITY_NAME_TO_KEY[bookingDetails.city] || 'riyadh';
+    const cityKey = CITY_NAME_TO_KEY[bookingDetails.city];
 
     const slotMatch = TIME_SLOTS.find((s) => s.time === bookingDetails.timeSlot);
-    const slotKey = slotMatch?.id || 'slot-3';
+    const slotKey = slotMatch?.id;
+
+    // P1-8: no silent defaults (riyadh / slot-3) — block submit if city or slot is missing
+    if (!cityKey || !slotKey) {
+      setBookingError('يرجى اختيار المدينة والموعد');
+      return;
+    }
 
     const PAYMENT_METHOD_MAP = {
       tabby: 'TABBY', tamara: 'TAMARA', cash: 'CASH',
