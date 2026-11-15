@@ -227,11 +227,40 @@ export const AuthProvider = ({ children }) => {
   };
 
 
-  const logout = () => {
+  const clearLocalSession = () => {
     setUser(null);
     localStorage.removeItem('letsrelax_auth_user');
     localStorage.removeItem('letsrelax_access_token');
     localStorage.removeItem('letsrelax_refresh_token');
+  };
+
+  // P1-20a: invalidate refresh token on server; local clear in finally
+  // The tokens are read first, then the local session is cleared right away, because the callers
+  // call logout() without awaiting and navigate immediately (e.g. to /staff-login). Clearing again
+  // in finally guarantees a local logout even if the server call fails (e.g. 401 on an expired
+  // access token, or offline).
+  const logout = async () => {
+    const refreshToken = localStorage.getItem('letsrelax_refresh_token');
+    const accessToken = localStorage.getItem('letsrelax_access_token');
+    clearLocalSession();
+
+    try {
+      if (!refreshToken) return;
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({ refreshToken }),
+        // Let the request finish even if the page navigates or unloads.
+        keepalive: true,
+      });
+    } catch (err) {
+      console.warn('[logout] server logout failed; local session cleared anyway:', err);
+    } finally {
+      clearLocalSession();
+    }
   };
 
   const updateUser = (updates) => setUser((p) => (p ? { ...p, ...updates } : null));
