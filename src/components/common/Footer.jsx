@@ -165,6 +165,21 @@ const Footer = () => {
                   {t('navTerms')}
                 </Link>
               </li>
+              <li>
+                <Link to="/privacy" className="hover:text-white hover:translate-x-[-3px] inline-block transition-transform">
+                  {lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}
+                </Link>
+              </li>
+              <li>
+                <Link to="/refund-policy" className="hover:text-white hover:translate-x-[-3px] inline-block transition-transform">
+                  {lang === 'ar' ? 'سياسة الإلغاء والاسترداد' : 'Refund Policy'}
+                </Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-white hover:translate-x-[-3px] inline-block transition-transform">
+                  {lang === 'ar' ? 'تواصل معنا' : 'Contact'}
+                </Link>
+              </li>
             </ul>
           </div>
 

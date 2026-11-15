@@ -8,7 +8,8 @@ import HowItWorksSection from '../components/home/HowItWorksSection';
 import HygieneStandards from '../components/home/HygieneStandards';
 import HomeReviewsSection from '../components/home/HomeReviewsSection';
 import GiftCardBanner from '../components/home/GiftCardBanner';
-import FAQTeaser from '../components/home/FAQTeaser';
+import FaqSection from '../components/FaqSection';
+import HomeBanners from '../components/HomeBanners';
 import InstagramFeed from '../components/home/InstagramFeed';
 
 const HomePage = () => {
@@ -26,6 +27,7 @@ const HomePage = () => {
   return (
     <div className="min-h-screen">
       <HeroSection />
+      <HomeBanners />
       {/* <CategoryNav activeCategory={activeCategory} onSelectCategory={handleCategorySelect} /> */}
       <FeaturedPackages />
       <div id="services-section">
@@ -36,7 +38,7 @@ const HomePage = () => {
       <HygieneStandards />
       <HomeReviewsSection />
       <GiftCardBanner />
-      <FAQTeaser />
+      <FaqSection />
       <InstagramFeed />
     </div>
   );
