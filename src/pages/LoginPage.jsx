@@ -253,8 +253,8 @@ const LoginPage = () => {
                         ? 'جاري الإرسال...'
                         : 'Sending...'
                       : lang === 'ar'
-                      ? 'إرسال رمز التحقق (OTP)'
-                      : 'Send Verification Code'}
+                      ? 'إرسال رمز التحقق على واتساب'
+                      : 'Send Code via WhatsApp'}
                   </span>
                   {isRTL ? <FiArrowLeft /> : <FiArrowRight />}
                 </button>
@@ -285,7 +285,9 @@ const LoginPage = () => {
                     {lang === 'ar' ? 'أدخلي رمز التحقق المرسل' : 'Enter Verification Code'}
                   </h3>
                   <p className="text-[11px] text-[#8E717D] mt-1">
-                    {lang === 'ar' ? 'تم إرسال الرمز لرقم الجوال:' : 'Code sent to:'}{' '}
+                    {lang === 'ar'
+                      ? 'سيصلكِ الرمز على واتساب خلال دقائق على الرقم:'
+                      : 'Your code will arrive on WhatsApp within minutes at:'}{' '}
                     <span className="font-bold text-[#2B151F]">{phoneNumber}</span>
                   </p>
                 </div>
@@ -296,7 +298,7 @@ const LoginPage = () => {
                       <span className="text-lg">💬</span>
                       <div>
                         <span className="font-black text-emerald-900 block text-[11px]">
-                          رسالة SMS تجريبية:
+                          رسالة واتساب تجريبية:
                         </span>
                         <span className="text-emerald-700 font-bold">
                           رمز دخول ليتس ريلاكس هو: [{simulatedOtp}]
