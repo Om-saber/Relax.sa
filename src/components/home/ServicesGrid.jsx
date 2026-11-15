@@ -129,7 +129,7 @@ const ServicesGrid = () => {
 
                 <div className="absolute top-2.5 left-2.5 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-lg text-[10px] font-bold text-[#2B151F] flex items-center gap-1">
                   <FiClock className="text-[#CF3A69]" />
-                  <span>{lang === 'ar' ? service.duration : service.duration.replace('دقيقة', 'mins')}</span>
+                  <span>{lang === 'ar' ? service.duration : (service.duration ?? '').replace('دقيقة', 'mins')}</span>
                 </div>
 
                 <div className="absolute bottom-2.5 right-2.5 left-2.5 text-white">

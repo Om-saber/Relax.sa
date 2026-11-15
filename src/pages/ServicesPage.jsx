@@ -240,7 +240,7 @@ const ServicesPage = () => {
 
                 <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-xl text-[10px] font-bold text-[#2B151F] flex items-center gap-1 whitespace-nowrap">
                   <FiClock className="text-[#CF3A69]" />
-                  <span>{lang === 'ar' ? service.duration : service.duration.replace('دقيقة', 'mins')}</span>
+                  <span>{lang === 'ar' ? service.duration : (service.duration ?? '').replace('دقيقة', 'mins')}</span>
                 </div>
 
                 <div className="absolute bottom-3 right-3 left-3 flex items-end justify-between text-white">

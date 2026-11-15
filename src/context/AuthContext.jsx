@@ -21,7 +21,7 @@ const normalizeRole = (backendRole) => {
 
 export const requestOtp = async (phoneNumber, name = '') => {
   try {
-    const cleaned = phoneNumber.replace(/\D/g, '');
+    const cleaned = (phoneNumber ?? '').replace(/\D/g, '');
     if (cleaned.length < 9) throw new Error('رقم جوال غير صحيح');
     const res = await fetch(`${API_BASE}/auth/otp/request`, {
       method: 'POST',
@@ -44,7 +44,7 @@ export const requestOtp = async (phoneNumber, name = '') => {
 
 export const verifyOtp = async (phoneNumber, code, name = '') => {
   try {
-    const cleaned = phoneNumber.replace(/\D/g, '');
+    const cleaned = (phoneNumber ?? '').replace(/\D/g, '');
     const res = await fetch(`${API_BASE}/auth/otp/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -111,7 +111,7 @@ const BookingModal = () => {
       console.log('CART DUMP:', JSON.parse(JSON.stringify(cart)));
       const result = await bookingsApi.create({
         customerName: bookingDetails.name.trim(),
-        customerPhone: bookingDetails.phone.replace(/\D/g, ''),
+        customerPhone: (bookingDetails.phone ?? '').replace(/\D/g, ''),
         city: cityKey,
         district: bookingDetails.district || undefined,
         address: bookingDetails.address || undefined,

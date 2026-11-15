@@ -176,7 +176,7 @@ const ClientsManagementTab = () => {
 
                 {client.phone && (
                   <a
-                    href={`https://wa.me/966${client.phone.replace(/^0/, '')}`}
+                    href={`https://wa.me/966${(client.phone ?? '').replace(/^0/, '')}`}
                     target="_blank"
                     rel="noreferrer"
                     onClick={(e) => e.stopPropagation()}

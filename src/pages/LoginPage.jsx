@@ -35,7 +35,7 @@ const LoginPage = () => {
     setErrorMsg('');
     setIsSubmitting(true);
 
-    const cleaned = phoneNumber.replace(/\D/g, '');
+    const cleaned = (phoneNumber ?? '').replace(/\D/g, '');
     if (cleaned.length < 9) {
       setErrorMsg(
         lang === 'ar'

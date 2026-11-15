@@ -87,7 +87,7 @@ const ClientPortalPage = () => {
 
   const clientBookings = bookings.filter((b) => {
     if (!currentPhone) return false;
-    const cleanCurrent = currentPhone.replace(/\D/g, '');
+    const cleanCurrent = (currentPhone ?? '').replace(/\D/g, '');
     const cleanBooking = (b.customerPhone || '').replace(/\D/g, '');
     return cleanBooking.includes(cleanCurrent) || cleanCurrent.includes(cleanBooking);
   });

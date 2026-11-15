@@ -391,7 +391,7 @@ const AdminDashboardPage = () => {
       name: staffForm.name,
       role: staffForm.role,
       phone: staffForm.phone,
-      email: staffForm.email.trim() || `${staffForm.name.replace(/\s+/g, '.').toLowerCase()}@relax.sa`,
+      email: staffForm.email.trim() || `${(staffForm.name ?? '').replace(/\s+/g, '.').toLowerCase()}@relax.sa`,
       city: staffForm.city,
       branches: [staffForm.city],
       commissionRate: Number(staffForm.commissionRate) || 20,
@@ -1048,7 +1048,7 @@ const AdminDashboardPage = () => {
                       </tr>
                     ) : (
                       filteredStaffList.map((st) => {
-                        const email = st.email || (st.nameEn ? `${st.nameEn.toLowerCase().replace(/[^a-z]/g, '')}@relax.sa` : `${st.name.replace(/\s+/g, '.')}@relax.sa`);
+                        const email = st.email || (st.nameEn ? `${st.nameEn.toLowerCase().replace(/[^a-z]/g, '')}@relax.sa` : `${(st.name ?? '').replace(/\s+/g, '.')}@relax.sa`);
                         const offDays = st.offDayLabels && st.offDayLabels.length > 0 ? st.offDayLabels : ['الجمعة', 'السبت'];
 
                         return (
@@ -1087,7 +1087,7 @@ const AdminDashboardPage = () => {
                                   {st.phone}
                                 </a>
                                 <a
-                                  href={`https://wa.me/966${st.phone.replace(/^0/, '')}`}
+                                  href={`https://wa.me/966${(st.phone ?? '').replace(/^0/, '')}`}
                                   target="_blank"
                                   rel="noreferrer"
                                   className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200"

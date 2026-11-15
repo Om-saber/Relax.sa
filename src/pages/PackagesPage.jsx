@@ -309,7 +309,7 @@ const PackagesPage = () => {
 
                       <div className="bg-white/95 backdrop-blur-md px-3 py-1 rounded-xl text-[11px] font-bold text-[#2B151F] flex items-center gap-1 shadow-sm">
                         <FiClock className="text-[#CF3A69]" />
-                        <span>{lang === 'ar' ? pkg.duration : pkg.duration.replace('دقيقة', 'mins').replace('جلسات', 'sessions')}</span>
+                        <span>{lang === 'ar' ? pkg.duration : (pkg.duration ?? '').replace('دقيقة', 'mins').replace('جلسات', 'sessions')}</span>
                       </div>
                     </div>
 
