@@ -18,8 +18,7 @@ import GalleryPage from '../pages/GalleryPage';
 import ReviewsPage from '../pages/ReviewsPage';
 import FAQPage from '../pages/FAQPage';
 import GiftCardsPage from '../pages/GiftCardsPage';
-import AboutPage from '../pages/AboutPage';
-import TermsPage from '../pages/TermsPage';
+import CmsPage from '../pages/CmsPage';
 import LoginPage from '../pages/LoginPage';
 import StaffLoginPage from '../pages/StaffLoginPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
@@ -83,8 +82,12 @@ const AppRoutes = () => {
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/faq" element={<FAQPage />} />
           <Route path="/gift-cards" element={<GiftCardsPage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/about" element={<CmsPage slug="about" />} />
+          <Route path="/privacy" element={<CmsPage slug="privacy-policy" />} />
+          <Route path="/terms" element={<CmsPage slug="terms" />} />
+          <Route path="/refund-policy" element={<CmsPage slug="cancellation-policy" />} />
+          <Route path="/contact" element={<CmsPage slug="contact" />} />
+          <Route path="/pages/:slug" element={<CmsPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route
             path="/client-portal"
