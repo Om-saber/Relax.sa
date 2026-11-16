@@ -11,7 +11,7 @@ import { useStaffBookings } from '../hooks/useStaffBookings';
 const StaffDashboardPage = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { todayBookings: apiToday, upcomingBookings: apiUpcoming, loading, updateStatus } = useStaffBookings();
+  const { todayBookings: apiToday, upcomingBookings: apiUpcoming, commissions, loading, updateStatus } = useStaffBookings();
 
   const [filterTab, setFilterTab] = useState('all');
 
@@ -141,7 +141,7 @@ const StaffDashboardPage = () => {
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-rose-100 flex items-center justify-between">
             <div>
               <p className="text-sm font-bold text-[#8E717D] mb-1">العمولات</p>
-              <h3 className="text-3xl font-black text-[#2B151F]">0 <span className="text-sm text-[#8E717D] font-bold">ر.س</span></h3>
+              <h3 className="text-3xl font-black text-[#2B151F]">{Number(commissions?.total ?? 0).toLocaleString('en-US', { maximumFractionDigits: 2 })} <span className="text-sm text-[#8E717D] font-bold">ر.س</span></h3>
             </div>
             <div className="w-14 h-14 rounded-2xl bg-purple-50 flex items-center justify-center text-purple-500">
               <FiDollarSign size={26} />
