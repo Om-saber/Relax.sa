@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { FiUser, FiPhone, FiLock, FiSave, FiMail } from 'react-icons/fi';
+import { FiUser, FiPhone, FiSave, FiMail } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext'; // استخدام الـ Context لجلب البيانات
 
 const StaffProfileTab = () => {
   const { user } = useAuth() || {}; // جلب بيانات المستخدم الحالي
-  const [form, setForm] = useState({ name: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -14,7 +14,6 @@ const StaffProfileTab = () => {
         name: user.name || '',
         phone: user.phone || '',
         email: user.email || '',
-        password: '',
       });
     }
   }, [user]);
@@ -31,18 +30,16 @@ const StaffProfileTab = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name: form.name,
-          phone: form.phone,
-          ...(form.password ? { password: form.password } : {}),
-        }),
+        // PATCH /users/me only accepts name/email/district/address/cityId and
+        // rejects unknown fields, so send the name only (phone/password were
+        // making every save fail with 400).
+        body: JSON.stringify({ name: form.name.trim() }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'فشل تحديث البيانات');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data?.error?.message || data?.message || 'فشل تحديث البيانات');
 
       toast.success('تم حفظ التغييرات بنجاح! ✅');
-      setForm(prev => ({ ...prev, password: '' }));
     } catch (err) {
       toast.error(err.message || 'حدث خطأ أثناء الحفظ');
     } finally {
@@ -74,18 +71,10 @@ const StaffProfileTab = () => {
         </div>
         
         <div>
-          <label className="block text-xs font-bold text-[#8E717D] mb-1">رقم الجوال</label>
+          <label className="block text-xs font-bold text-[#8E717D] mb-1">رقم الجوال (اختياري — يتم تعديله من الإدارة)</label>
           <div className="relative">
             <FiPhone className="absolute right-3 top-3 text-slate-400" />
-            <input required type="text" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-rose-100 bg-[#FFF9FA] focus:outline-none focus:border-[#CF3A69] font-bold text-sm" dir="ltr" />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-[#8E717D] mb-1">كلمة المرور الجديدة (اختياري)</label>
-          <div className="relative">
-            <FiLock className="absolute right-3 top-3 text-slate-400" />
-            <input type="password" placeholder="اتركه فارغاً إذا لم ترغب بتغييره" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-rose-100 bg-[#FFF9FA] focus:outline-none focus:border-[#CF3A69] font-bold text-sm" />
+            <input type="text" disabled value={form.phone} placeholder="غير مسجل" className="w-full pr-10 pl-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 font-bold text-sm" dir="ltr" />
           </div>
         </div>
 

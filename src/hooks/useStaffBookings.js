@@ -4,6 +4,7 @@ import { staffApi } from '../api/staffApi';
 export function useStaffBookings(enabled = true) {
   const [todayBookings, setTodayBookings] = useState([]);
   const [upcomingBookings, setUpcomingBookings] = useState([]);
+  const [commissions, setCommissions] = useState({ total: 0, pending: 0, paid: 0, count: 0 });
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState(null);
 
@@ -16,12 +17,15 @@ export function useStaffBookings(enabled = true) {
     setLoading(true);
     setError(null);
     try {
-      const [today, upcoming] = await Promise.all([
+      const [today, upcoming, summary] = await Promise.all([
         staffApi.getTodayBookings(),
         staffApi.getUpcomingBookings(),
+        // A failed summary must not hide the bookings list.
+        staffApi.getCommissionSummary().catch(() => null),
       ]);
       setTodayBookings(Array.isArray(today) ? today : []);
       setUpcomingBookings(Array.isArray(upcoming) ? upcoming : []);
+      if (summary) setCommissions(summary);
     } catch (err) {
       setError(err.message);
       setTodayBookings([]);
@@ -48,6 +52,7 @@ export function useStaffBookings(enabled = true) {
   return {
     todayBookings,
     upcomingBookings,
+    commissions,
     loading,
     error,
     refetch: fetchAll,

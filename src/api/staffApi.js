@@ -40,6 +40,7 @@ async function apiFetch(path, options = {}) {
 export const staffApi = {
   getTodayBookings: () => apiFetch('/admin/staff/bookings/today'),
   getUpcomingBookings: () => apiFetch('/admin/staff/bookings/upcoming'),
+  getCommissionSummary: () => apiFetch('/admin/staff/commissions/summary'),
   updateBookingStatus: (id, status) =>
     apiFetch(`/admin/staff/bookings/${id}/status`, {
       method: 'PATCH',
